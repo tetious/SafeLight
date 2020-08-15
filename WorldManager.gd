@@ -1,5 +1,7 @@
 extends Node2D
+class_name WorldManager
 
+export var DEBUG := false
 
 # Declare member variables here. Examples:
 # var a = 2
@@ -9,9 +11,11 @@ onready var camera := $Camera
 onready var bot := $Bot
 onready var nav := $Map/Navigation2D
 
-# Called when the node enters the scene tree for the first time.
+const lights := []
+
 func _ready():
-	pass # Replace with function body.
+	lights.append($Bot/Light2D) # TODO: grab these dynamically
+	lights.append($Bot2/Light2D) # TODO: grab these dynamically
 
 func _input(event):
 	if event is InputEventMouseButton:
@@ -23,8 +27,3 @@ func _input(event):
 			
 			
 			
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
