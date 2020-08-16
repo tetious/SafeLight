@@ -1,7 +1,7 @@
 extends Light2D
 class_name SafeLight
 
-onready var world : WorldManager = find_parent("WorldManager")
+onready var world := find_parent("WorldManager")
 
 onready var light_distance : float = texture_scale * 48
 onready var light_size := Vector2(light_distance, light_distance)

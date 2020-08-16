@@ -1,6 +1,6 @@
 extends KinematicBody2D
 
-onready var world : WorldManager = find_parent("WorldManager")
+onready var world := find_parent("WorldManager")
 
 export var speed := 400.0
 var path := PoolVector2Array() setget set_path

@@ -8,7 +8,7 @@ var destination := Vector2.ZERO
 var path := PoolVector2Array()
 
 
-onready var world : WorldManager = find_parent("WorldManager")
+onready var world := find_parent("WorldManager")
 var targets := []
 
 func _ready() -> void:
