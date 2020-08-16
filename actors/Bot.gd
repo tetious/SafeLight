@@ -1,7 +1,10 @@
 extends KinematicBody2D
 
+onready var world : WorldManager = find_parent("WorldManager")
+
 export var speed := 400.0
 var path := PoolVector2Array() setget set_path
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:

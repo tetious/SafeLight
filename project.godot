@@ -9,12 +9,18 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "Light2D",
+"class": "SafeLight",
+"language": "GDScript",
+"path": "res://actors/light.gd"
+}, {
 "base": "Node2D",
 "class": "WorldManager",
 "language": "GDScript",
 "path": "res://WorldManager.gd"
 } ]
 _global_script_class_icons={
+"SafeLight": "",
 "WorldManager": ""
 }
 
@@ -63,6 +69,17 @@ camera_pan={
 "events": [ Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"button_mask":0,"position":Vector2( 0, 0 ),"global_position":Vector2( 0, 0 ),"factor":1.0,"button_index":3,"pressed":false,"doubleclick":false,"script":null)
  ]
 }
+
+[layer]
+
+stretch/aspect=false
+
+[layer_names]
+
+2d_physics/layer_1="ai light"
+2d_physics/layer_2="player"
+2d_physics/layer_3="mob"
+2d_physics/layer_11="walk"
 
 [rendering]
 

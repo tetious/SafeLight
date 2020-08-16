@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://WorldManager.gd" type="Script" id=1]
 [ext_resource path="res://1bit.tres" type="TileSet" id=2]
 [ext_resource path="res://actors/Bot.tscn" type="PackedScene" id=3]
 [ext_resource path="res://props/SolarPanel.tscn" type="PackedScene" id=4]
 [ext_resource path="res://Camera.gd" type="Script" id=5]
+[ext_resource path="res://props/Lamp.tscn" type="PackedScene" id=6]
 [ext_resource path="res://actors/Mob.tscn" type="PackedScene" id=7]
 
 [node name="WorldManager" type="Node2D"]
@@ -30,35 +31,14 @@ tile_data = PoolIntArray( 65537, 0, 0, 65538, 0, 0, 65539, 0, 0, 65540, 0, 0, 65
 [node name="SolarPanel" parent="Map" instance=ExtResource( 4 )]
 position = Vector2( 383.801, 271.858 )
 
+[node name="Lamp" parent="Map" instance=ExtResource( 6 )]
+position = Vector2( 656, 224 )
+
 [node name="Bot" parent="." instance=ExtResource( 3 )]
 position = Vector2( 230.566, 298.601 )
 
 [node name="Mob" parent="." instance=ExtResource( 7 )]
-position = Vector2( 688.851, 264.08 )
+position = Vector2( 496, 248 )
 
 [node name="Mob2" parent="." instance=ExtResource( 7 )]
-position = Vector2( 668.192, 376.912 )
-
-[node name="Mob3" parent="." instance=ExtResource( 7 )]
-position = Vector2( 742.884, 352.015 )
-
-[node name="Mob4" parent="." instance=ExtResource( 7 )]
-position = Vector2( 738.646, 315.993 )
-
-[node name="Mob5" parent="." instance=ExtResource( 7 )]
-position = Vector2( 777.188, 301.335 )
-
-[node name="Mob6" parent="." instance=ExtResource( 7 )]
-position = Vector2( 675.608, 238.652 )
-
-[node name="Mob7" parent="." instance=ExtResource( 7 )]
-position = Vector2( 736.854, 248.503 )
-
-[node name="Mob8" parent="." instance=ExtResource( 7 )]
-position = Vector2( 684.084, 319.172 )
-
-[node name="Mob9" parent="." instance=ExtResource( 7 )]
-position = Vector2( 706.333, 318.112 )
-
-[node name="Mob10" parent="." instance=ExtResource( 7 )]
-position = Vector2( 710.041, 287.388 )
+position = Vector2( 656, 576 )

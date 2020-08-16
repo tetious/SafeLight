@@ -10,11 +10,7 @@ export var DEBUG := false
 onready var camera := $Camera
 onready var nav := $Map/Navigation2D
 
-const lights := []
-
-func _ready():
-	lights.append($Bot/Light2D) # TODO: grab these dynamically
-	#lights.append($Bot2/Light2D) # TODO: grab these dynamically
+onready var lights := get_tree().get_nodes_in_group("light")
 
 func _input(event):
 	if event is InputEventMouseButton:
