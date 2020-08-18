@@ -30,6 +30,10 @@ config/name="Safelight"
 run/main_scene="res://World.tscn"
 config/icon="res://icon.png"
 
+[autoload]
+
+WorldState="*res://WorldState.gd"
+
 [display]
 
 window/size/width=1280

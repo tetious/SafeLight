@@ -16,6 +16,7 @@ collision_layer = 1026
 script = ExtResource( 2 )
 
 [node name="Light" parent="." instance=ExtResource( 3 )]
+range_item_cull_mask = 2
 
 [node name="bot" type="Sprite" parent="."]
 texture = ExtResource( 1 )
@@ -26,4 +27,5 @@ occluder = SubResource( 1 )
 light_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+visible = false
 shape = SubResource( 2 )
