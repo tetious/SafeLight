@@ -14,6 +14,9 @@ height = 3.8258
 [node name="Bot" type="KinematicBody2D"]
 collision_layer = 1026
 script = ExtResource( 2 )
+__meta__ = {
+"_edit_group_": true
+}
 
 [node name="Light" parent="." instance=ExtResource( 3 )]
 range_item_cull_mask = 2

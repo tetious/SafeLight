@@ -1,40 +1,38 @@
 extends Camera2D
 
-export var speed = 500
-const base_ramp = 0.001
-var ramp = base_ramp
-var drag_start
+const MAX_ZOOM_LEVEL = 0.25
+const MIN_ZOOM_LEVEL = 1.0
+const ZOOM_INCREMENT = 0.05
 
-func _ready():
-	set_process_input(true)
-	set_process(true)
-	pass
+var _current_zoom_level := zoom.x
+var _drag := false
 
 func _input(event):
-	if(event.is_action_pressed("camera_pan")):
-		drag_start = get_camera_position() + get_viewport().get_mouse_position()
-			
-func _process(delta):
-	var velocity = Vector2(0,0)
+	if event.is_action_pressed("camera_pan"):
+		_drag = true
+	elif event.is_action_released("camera_pan"):
+		_drag = false
+	elif event.is_action("camera_zoom_in"):
+		_update_zoom(-ZOOM_INCREMENT, get_local_mouse_position())
+	elif event.is_action("camera_zoom_out"):
+		_update_zoom(ZOOM_INCREMENT, get_local_mouse_position())
+	elif event is InputEventMouseMotion && _drag:
+		set_offset(get_offset() - event.relative*_current_zoom_level)
+		emit_signal("moved")
+
+func _update_zoom(incr, zoom_anchor):
+	var old_zoom = _current_zoom_level
+	_current_zoom_level += incr
+	if _current_zoom_level < MAX_ZOOM_LEVEL:
+		_current_zoom_level = MAX_ZOOM_LEVEL
+	elif _current_zoom_level > MIN_ZOOM_LEVEL:
+		_current_zoom_level = MIN_ZOOM_LEVEL
+	if old_zoom == _current_zoom_level:
+		return
 	
-	if(Input.is_action_pressed("camera_pan_down")): 
-		velocity.y = 1
-	elif(Input.is_action_pressed("camera_pan_up")):
-		velocity.y = -1
-	else:
-		velocity.y = 0
-
-	if(Input.is_action_pressed("camera_pan_left")): 
-		velocity.x = -1
-	elif(Input.is_action_pressed("camera_pan_right")):
-		velocity.x = 1
-	else:
-		velocity.x = 0
-
-	if(velocity.length_squared() > 0):
-		if(ramp < 1): ramp *= 2
-		position = position + velocity * delta * (speed * ramp)
-	else:
-		if(Input.is_action_pressed("camera_pan")):
-			position = (get_viewport().get_mouse_position() - drag_start) * - 1
-		ramp = base_ramp
+	var zoom_center = zoom_anchor - get_offset()
+	var ratio = 1-_current_zoom_level/old_zoom
+	set_offset(get_offset() + zoom_center*ratio)
+	
+	set_zoom(Vector2(_current_zoom_level, _current_zoom_level))
+	emit_signal("zoomed")

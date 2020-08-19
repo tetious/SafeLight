@@ -5,18 +5,17 @@ export var DEBUG := false
 
 export var starting_bot_count := 5
 
-#onready var map := $Map/Navigation2D/TileMap
 onready var camera := $Camera
-onready var nav := $Map/Navigation2D
 
 var lights 
 
 func _ready() -> void:
-	WorldState.bot_count = starting_bot_count
+	#WorldState.bot_count = starting_bot_count
 	lights = get_tree().get_nodes_in_group("light")
 
 func _process(delta: float) -> void:
 	pass
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
