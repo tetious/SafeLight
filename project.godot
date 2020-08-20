@@ -12,16 +12,10 @@ _global_script_classes=[ {
 "base": "Light2D",
 "class": "SafeLight",
 "language": "GDScript",
-"path": "res://actors/light.gd"
-}, {
-"base": "Node2D",
-"class": "WorldManager",
-"language": "GDScript",
-"path": "res://WorldManager.gd"
+"path": "res://Actors/light.gd"
 } ]
 _global_script_class_icons={
-"SafeLight": "",
-"WorldManager": ""
+"SafeLight": ""
 }
 
 [application]

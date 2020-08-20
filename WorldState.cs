@@ -3,9 +3,6 @@ using System;
 
 public class WorldState : Node
 {
-    // Declare member variables here. Examples:
-    // private int a = 2;
-    // private string b = "text";
     private readonly Timer tickTimer = new Timer { ProcessMode = Timer.TimerProcessMode.Physics };
 
     [Signal]
@@ -13,6 +10,13 @@ public class WorldState : Node
 
     [Signal]
     public delegate void StateChanged();
+
+    public static WorldState I { get; private set; }
+
+    private WorldState()
+    {
+        I = this;
+    }
 
     public int BotCount { get; private set; } = 5;
 

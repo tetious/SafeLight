@@ -1,7 +1,8 @@
 [gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://assets/img/solarpanel-m.png" type="Texture" id=1]
-[ext_resource path="res://props/PowerProducer.gd" type="Script" id=2]
+[ext_resource path="res://Props/PowerProducer.gd" type="Script" id=2]
+
 
 [sub_resource type="RectangleShape2D" id=1]
 extents = Vector2( 16, 16 )

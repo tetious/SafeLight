@@ -20,9 +20,22 @@ public class Map : Node2D
             this.astar.AddPoint(this.IdForPoint(position), position);
         }
 
+        bool TileIsImpassable(int tileIndex)
+        {
+            if (this.tileMap.TileSet.TileGetShapeCount(tileIndex) == 0) return false;
+            var rawShapes = this.tileMap.TileSet.TileGetShapes(tileIndex);
+            if (rawShapes.Count == 1 && rawShapes[0] is Dictionary shapes)
+            {
+                return shapes.Contains("shape");
+            }
+            return false;
+        }
+
         foreach (var position in usedTiles)
         {
             var id = this.IdForPoint(position);
+            var positionTileIndex = this.tileMap.GetCellv(position);
+            if(TileIsImpassable(positionTileIndex)) continue;
 
             for (var x = 0; x < 3; x++)
             for (var y = 0; y < 3; y++)
@@ -31,16 +44,8 @@ public class Map : Node2D
                 var targetId = this.IdForPoint(target);
                 if (position == target || this.astar.HasPoint(targetId) == false) continue;
 
-                var cellIndex = this.tileMap.GetCellv(target);
-                var rawShapes = this.tileMap.TileSet.TileGetShapes(cellIndex);
-                if (rawShapes.Count == 1 && rawShapes[0] is Dictionary shapes)
-                {
-                    if (shapes.Contains("shape") == false) this.astar.ConnectPoints(id, targetId);
-                }
-                else
-                {
-                    this.astar.ConnectPoints(id, targetId);
-                }
+                var tileIndex = this.tileMap.GetCellv(target);
+                if(!TileIsImpassable(tileIndex)) this.astar.ConnectPoints(id, targetId);
             }
         }
     }
@@ -49,7 +54,7 @@ public class Map : Node2D
     {
         var startId = this.IdForPoint(this.tileMap.WorldToMap(start));
         var endId = this.IdForPoint(this.tileMap.WorldToMap(end));
-        return this.astar.GetPointPath(startId, endId).Select(p => this.tileMap.MapToWorld(p)).ToArray();
+        return this.astar.GetPointPath(startId, endId).Select(p => this.tileMap.MapToWorld(p) + new Vector2(8, 8)).ToArray();
     }
 
     private int IdForPoint(Vector2 point)

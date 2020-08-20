@@ -1,7 +1,8 @@
 [gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://assets/img/lamp_lightmap.png" type="Texture" id=1]
-[ext_resource path="res://actors/light.gd" type="Script" id=2]
+[ext_resource path="res://Actors/light.gd" type="Script" id=2]
+
 
 [node name="SafeLight" type="Light2D" groups=[
 "light",
