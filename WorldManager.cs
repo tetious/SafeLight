@@ -1,6 +1,8 @@
 using Godot;
 using System;
 using System.Linq;
+using Safelight.Actors;
+
 
 public class WorldManager : Node2D
 {
