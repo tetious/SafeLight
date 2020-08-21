@@ -24,6 +24,8 @@ public class WorldState : Node
 
     public int StoredPower { get; private set; }
 
+    public int CrystalCount { get; private set; }
+
     public int MaxPower { get; private set; } = 100;
 
     // Called when the node enters the scene tree for the first time.
@@ -48,6 +50,11 @@ public class WorldState : Node
         }
 
         return this.Gatherers;
+    }
+    public void AddCrystals(int num)
+    {
+        this.CrystalCount += num;
+        this.EmitSignal("StateChanged");
     }
 
     public void AddPower(int eu)

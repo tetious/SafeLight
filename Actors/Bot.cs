@@ -15,14 +15,17 @@ namespace Safelight.Actors
         {
             var bot = this.Node as Bot;
             var overlappingAreas = bot.GetOverlappingAreas().Cast<Area2D>();
-            if (overlappingAreas.Any(a => a is WorldResource))
+            var resource = overlappingAreas.OfType<WorldResource>().FirstOrDefault();
+            if (resource != null)
             {
                 GD.Print("StandingOnResourceTask: Standing on a resource!");
+                bot.ResourceAtFoot = resource;
                 this.Status = TaskStatus.Succeeded;
             }
             else
             {
                 GD.Print("StandingOnResourceTask: NOT Standing on a resource!");
+                bot.ResourceAtFoot = null;
                 this.Status = TaskStatus.Failed;
             }
         }
@@ -46,7 +49,14 @@ namespace Safelight.Actors
 
         public override void Run()
         {
-            GD.Print("GatherResourceTask");
+            var bot = this.Node as Bot;
+
+            if (bot?.ResourceAtFoot == null)
+            {
+                this.Status = TaskStatus.Failed;
+            }
+
+            WorldState.I.AddCrystals(bot.ResourceAtFoot.PopResources());
             this.Status = TaskStatus.Succeeded;
         }
     }
@@ -89,6 +99,8 @@ namespace Safelight.Actors
         public WorldManager World { get; private set; }
 
         private readonly Selector root;
+
+        public WorldResource ResourceAtFoot { get; set; }= null;
 
         public Bot()
         {

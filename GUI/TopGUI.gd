@@ -12,4 +12,4 @@ func _ready() -> void:
 
 func _state_changed():
 	power_value.text = "%d/%d" % [WorldState.StoredPower, WorldState.MaxPower]
-	crystal_value.text = str(10)
+	crystal_value.text = str(WorldState.CrystalCount)
