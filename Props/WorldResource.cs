@@ -3,14 +3,17 @@ using System;
 
 public class WorldResource : Area2D
 {
-    // Declare member variables here. Examples:
-    // private int a = 2;
-    // private string b = "text";
+    public bool Claimed = false;
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
-        
+        this.Connect("area_exited", this, nameof(this.OnAreaExited));
+    }
+
+    public void OnAreaExited(Area2D area)
+    {
+        this.Claimed = false;
     }
 
 //  // Called every frame. 'delta' is the elapsed time since the previous frame.

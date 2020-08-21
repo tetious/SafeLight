@@ -7,6 +7,9 @@ const ZOOM_INCREMENT = 0.05
 var _current_zoom_level := zoom.x
 var _drag := false
 
+signal moved()
+signal zoomed()
+
 func _input(event):
 	if event.is_action_pressed("camera_pan"):
 		_drag = true

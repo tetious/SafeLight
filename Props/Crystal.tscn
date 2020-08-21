@@ -8,6 +8,7 @@ extents = Vector2( 8, 8 )
 
 [node name="Crystal" type="Area2D"]
 collision_layer = 8
+collision_mask = 2
 script = ExtResource( 2 )
 
 [node name="resources" type="Sprite" parent="."]

@@ -58,7 +58,7 @@ namespace Safelight.Actors
         public override void Run()
         {
             var bot = this.Node as Bot;
-            var resources = bot.World.GetNode("Map/Resources").GetChildren().Cast<WorldResource>().ToArray();
+            var resources = bot.World.GetNode("Map/Resources").GetChildren().Cast<WorldResource>().Where(r => r.Claimed == false).ToArray();
             if (resources.Length > 0)
             {
                 var closest = resources.First();
@@ -71,6 +71,7 @@ namespace Safelight.Actors
                 }
 
                 bot.Path = bot.World.GetNode<Map>("Map").GetPath(bot.Position, closest.Position).ToList();
+                closest.Claimed = true;
                 GD.Print("FindNearestResource: Found a resource!");
 
                 this.Status = TaskStatus.Succeeded;
