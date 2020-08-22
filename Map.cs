@@ -23,6 +23,7 @@ public class Map : Node2D
         bool TileIsImpassable(int tileIndex)
         {
             if (tileIndex == -1) return true;
+
             if (this.tileMap.TileSet.TileGetShapeCount(tileIndex) == 0) return false;
             var rawShapes = this.tileMap.TileSet.TileGetShapes(tileIndex);
             if (rawShapes.Count == 1 && rawShapes[0] is Dictionary shapes)
@@ -33,11 +34,22 @@ public class Map : Node2D
             return false;
         }
 
+        bool TileIsOccupied(Vector2 position)
+        {
+            var tileBounds = new RectangleShape2D { Extents = this.tileMap.CellSize / 2 };
+            var tileTransform = new Transform2D(0, this.tileMap.MapToWorld(position) + new Vector2(8, 8));
+            var things = this.GetChildren().Cast<Node>().OfType<StaticBody2D>()
+                .Where(b => b.GetCollisionLayerBit(10) &&
+                    b.GetChildren().Cast<Node>().OfType<CollisionShape2D>().Single().Shape.Collide(b.GlobalTransform, tileBounds, tileTransform));
+
+            return things.Any();
+        }
+
         foreach (var position in usedTiles)
         {
             var id = this.IdForPoint(position);
             var positionTileIndex = this.tileMap.GetCellv(position);
-            if (TileIsImpassable(positionTileIndex)) continue;
+            if (TileIsOccupied(position) || TileIsImpassable(positionTileIndex)) continue;
 
             for (var x = 0; x < 3; x++)
             for (var y = 0; y < 3; y++)
@@ -47,7 +59,7 @@ public class Map : Node2D
                 if (position == target || this.astar.HasPoint(targetId) == false) continue;
 
                 var tileIndex = this.tileMap.GetCellv(target);
-                if (!TileIsImpassable(tileIndex)) this.astar.ConnectPoints(id, targetId);
+                if (!TileIsOccupied(position) && !TileIsImpassable(tileIndex)) this.astar.ConnectPoints(id, targetId);
             }
         }
     }
