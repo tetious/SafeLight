@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=12 format=2]
 
 [ext_resource path="res://WorldManager.cs" type="Script" id=1]
 [ext_resource path="res://1bit.tres" type="TileSet" id=2]
@@ -6,6 +6,7 @@
 [ext_resource path="res://Props/SolarPanel.tscn" type="PackedScene" id=4]
 [ext_resource path="res://Camera.gd" type="Script" id=5]
 [ext_resource path="res://Props/Lamp.tscn" type="PackedScene" id=6]
+[ext_resource path="res://Actors/Mob.tscn" type="PackedScene" id=7]
 [ext_resource path="res://Props/Crystal.tscn" type="PackedScene" id=8]
 [ext_resource path="res://GUI/LeftGUI.tscn" type="PackedScene" id=9]
 [ext_resource path="res://GUI/TopGUI.tscn" type="PackedScene" id=10]
@@ -13,6 +14,7 @@
 
 [node name="WorldManager" type="Node2D"]
 script = ExtResource( 1 )
+DEBUG = true
 
 [node name="Camera" type="Camera2D" parent="."]
 position = Vector2( 510.238, 299.639 )
@@ -54,9 +56,11 @@ margin_top = 30.0
 
 [node name="LeftGUI" parent="CanvasLayer" instance=ExtResource( 9 )]
 
+[node name="Mob" parent="." instance=ExtResource( 7 )]
+position = Vector2( 568, 344 )
+
 [node name="Bots" type="Node2D" parent="."]
 
 [node name="Bot" parent="Bots" instance=ExtResource( 3 )]
-position = Vector2( 200, 200 )
-collision_mask = 10
+position = Vector2( 200, 248 )
 Type = 1

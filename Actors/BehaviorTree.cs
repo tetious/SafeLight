@@ -45,6 +45,37 @@ namespace Safelight.Actors
         }
     }
 
+    public class ParallelSequence : BehaviorTreeTask
+    {
+        public override void Run()
+        {
+            var children = this.Children;
+            if (!children.Any()) return;
+            this.Status = TaskStatus.Running;
+            foreach (var child in children)
+            {
+                if (child.Status == TaskStatus.Running || child.Status == TaskStatus.Fresh) child.Run();
+
+                if (child.Status == TaskStatus.Failed)
+                {
+                    child.Reset();
+                    continue;
+                }
+
+                if (child.Status == TaskStatus.Succeeded)
+                {
+                    child.Reset();
+                    continue;
+                }
+            }
+        }
+
+        public ParallelSequence(Func<bool> guard = null, params BehaviorTreeTask[] children) : base(guard)
+        {
+            this.AddChildren(children);
+        }
+    }
+
     public class Selector : BehaviorTreeTask
     {
         public override void Run()

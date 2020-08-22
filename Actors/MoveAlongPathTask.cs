@@ -17,7 +17,10 @@ namespace Safelight.Actors
     public class MoveAlongPathTask<T> : BehaviorTreeTask<T>
         where T : Node2D, IPathed
     {
-        public MoveAlongPathTask(T node, Func<bool> guard = null) : base(node, guard) { }
+        public MoveAlongPathTask(T node, Func<bool> guard = null) : base(node, guard)
+        {
+            if (guard == null) guard = () => node.Path.Any() || node.PathGoal != Vector2.Zero;
+        }
 
         public override void Run()
         {
@@ -28,14 +31,14 @@ namespace Safelight.Actors
             if (bot.PathGoal != Vector2.Zero) return;
 
             var start = bot.Position;
-            GD.Print(string.Join(",", bot.Path));
+            //GD.Print(string.Join(",", bot.Path));
             while (bot.Path.Any())
             {
                 var tip = bot.Path.First();
                 var toNext = start.DistanceTo(tip);
 
                 bot.PathGoal = start.LinearInterpolate(tip, distance / toNext);
-                GD.Print("Setting PathGoal:", bot.PathGoal);
+                //GD.Print("Setting PathGoal:", bot.PathGoal);
 
                 if (distance < toNext)
                     break;

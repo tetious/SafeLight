@@ -39,7 +39,6 @@ public class Bot : Area2D, IPathed
     public override void _Ready()
     {
         this.World = (WorldManager)this.FindParent("WorldManager");
-        WorldState.I.Connect("WorldTick", this, "WorldTick");
     }
 
     public override void _Draw()
@@ -79,32 +78,5 @@ public class Bot : Area2D, IPathed
         this.Update();
 
         this.root.Run();
-    }
-
-    private void WorldTick()
-    {
-//        if (this.Path.Count != 0) this.MoveAlongPath(this.WalkSpeed * WorldState.I.TickLengthMs);
-    }
-
-    private void MoveAlongPath(float distance)
-    {
-        var start = this.Position;
-        GD.Print(string.Join(",", this.Path));
-        while (this.Path.Any())
-        {
-            var tip = this.Path.First();
-            var toNext = start.DistanceTo(tip);
-
-            this.PathGoal = start.LinearInterpolate(tip, distance / toNext);
-            GD.Print("Setting PathGoal:", this.PathGoal);
-
-            if (distance < toNext)
-                break;
-
-            distance -= toNext;
-            start = tip;
-            this.PathGoal = tip;
-            this.Path.RemoveAt(0);
-        }
     }
 }
