@@ -9,6 +9,8 @@ public class Map : Node2D
     private TileMap tileMap;
     private Rect2 usedRect;
 
+    private static readonly RectangleShape2D tileBounds = new RectangleShape2D { Extents = new Vector2(8, 8) };
+
     public override void _Ready()
     {
         this.tileMap = this.GetNode<TileMap>("TileMap");
@@ -36,11 +38,10 @@ public class Map : Node2D
 
         bool TileIsOccupied(Vector2 position)
         {
-            var tileBounds = new RectangleShape2D { Extents = this.tileMap.CellSize / 2 };
             var tileTransform = new Transform2D(0, this.tileMap.MapToWorld(position) + new Vector2(8, 8));
-            var things = this.GetChildren().Cast<Node>().OfType<StaticBody2D>()
+            var things = this.GetNode("Things").GetChildren().Cast<StaticBody2D>()
                 .Where(b => b.GetCollisionLayerBit(10) &&
-                    b.GetChildren().Cast<Node>().OfType<CollisionShape2D>().Single().Shape.Collide(b.GlobalTransform, tileBounds, tileTransform));
+                    b.GetNode<CollisionShape2D>("CollisionShape2D").Shape.Collide(b.GlobalTransform, tileBounds, tileTransform));
 
             return things.Any();
         }
@@ -52,14 +53,16 @@ public class Map : Node2D
             if (TileIsOccupied(position) || TileIsImpassable(positionTileIndex)) continue;
 
             for (var x = 0; x < 3; x++)
-            for (var y = 0; y < 3; y++)
             {
-                var target = position + new Vector2(x - 1, y - 1);
-                var targetId = this.IdForPoint(target);
-                if (position == target || this.astar.HasPoint(targetId) == false) continue;
+                for (var y = 0; y < 3; y++)
+                {
+                    var target = position + new Vector2(x - 1, y - 1);
+                    var targetId = this.IdForPoint(target);
+                    if (position == target || this.astar.HasPoint(targetId) == false) continue;
 
-                var tileIndex = this.tileMap.GetCellv(target);
-                if (!TileIsOccupied(position) && !TileIsImpassable(tileIndex)) this.astar.ConnectPoints(id, targetId);
+                    var tileIndex = this.tileMap.GetCellv(target);
+                    if (!TileIsOccupied(position) && !TileIsImpassable(tileIndex)) this.astar.ConnectPoints(id, targetId);
+                }
             }
         }
     }

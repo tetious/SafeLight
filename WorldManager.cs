@@ -17,13 +17,13 @@ public class WorldManager : Node2D
     public override void _Ready()
     {
         this.Map = this.GetNode<Map>("Map");
+        this.Lights = this.GetTree().GetNodesInGroup("safelight").Cast<SafeLight>().ToArray();
     }
 
     public override void _Process(float delta) { }
 
     public override void _PhysicsProcess(float delta)
     {
-        this.Lights = this.GetTree().GetNodesInGroup("safelight").Cast<SafeLight>().ToArray();
     }
 
     public override void _UnhandledInput(InputEvent evt)

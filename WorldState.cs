@@ -24,7 +24,7 @@ public class WorldState : Node
 
     public int StoredPower { get; private set; }
 
-    private decimal crystalCount;
+    private float crystalCount;
 
     public int CrystalCount => (int)Math.Floor(this.crystalCount);
 
@@ -55,7 +55,7 @@ public class WorldState : Node
 
         return this.Gatherers;
     }
-    public void AddCrystals(decimal num)
+    public void AddCrystals(float num)
     {
         this.crystalCount += num;
         this.EmitSignal("StateChanged");
