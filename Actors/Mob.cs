@@ -21,10 +21,10 @@ namespace Safelight.Actors
         [Export]
         public int SightDistance { get; set; } = 400;
 
-        public List<(Vector2 source, Vector2 dest, Dictionary obstacle)> LightTargets { get; } = new List<(Vector2, Vector2, Dictionary)>();
-
         public Rect2 SightRect => new Rect2(this.GlobalPosition - new Vector2(this.SightDistance, this.SightDistance) / 2,
             new Vector2(this.SightDistance, this.SightDistance));
+
+        public List<(Vector2 source, Vector2 dest, Dictionary obstacle)> LightTargets { get; } = new List<(Vector2, Vector2, Dictionary)>();
 
         private readonly BehaviorTreeTask root;
 
@@ -68,8 +68,10 @@ namespace Safelight.Actors
 
         public override void _PhysicsProcess(float delta)
         {
-            this.root.Run(delta);
+            //this.root.Run(delta);
             this.Update();
         }
+
+
     }
 }

@@ -19,6 +19,7 @@ namespace Safelight.Props
 
         public override void _Draw()
         {
+            return;
             if (this.World.DEBUG == false) return;
             this.DrawSetTransform(new Vector2() - GlobalPosition, 0, Vector2.One);
             this.DrawRect(this.LightRect, Colors.Yellow, false);

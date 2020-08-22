@@ -6,7 +6,7 @@
 [ext_resource path="res://Props/SolarPanel.tscn" type="PackedScene" id=4]
 [ext_resource path="res://Camera.gd" type="Script" id=5]
 [ext_resource path="res://Props/Lamp.tscn" type="PackedScene" id=6]
-[ext_resource path="res://Actors/LaserShot.tscn" type="PackedScene" id=7]
+[ext_resource path="res://Actors/Mob.tscn" type="PackedScene" id=7]
 [ext_resource path="res://Props/Crystal.tscn" type="PackedScene" id=8]
 [ext_resource path="res://GUI/LeftGUI.tscn" type="PackedScene" id=9]
 [ext_resource path="res://GUI/TopGUI.tscn" type="PackedScene" id=10]
@@ -58,14 +58,10 @@ margin_top = 30.0
 
 [node name="LeftGUI" parent="CanvasLayer" instance=ExtResource( 9 )]
 
-[node name="LaserShot" parent="." instance=ExtResource( 7 )]
-position = Vector2( 232, 216 )
-collision_layer = 6
-collision_mask = 1024
-mode = 3
+[node name="Mob" parent="." instance=ExtResource( 7 )]
+position = Vector2( 278.739, 369.497 )
 
 [node name="Bots" type="Node2D" parent="."]
 
 [node name="Bot" parent="Bots" instance=ExtResource( 3 )]
 position = Vector2( 200, 248 )
-Type = 1

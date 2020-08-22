@@ -22,6 +22,7 @@ namespace Safelight.Actors
 
         public override void Run(float delta)
         {
+            this.Status = TaskStatus.Succeeded;
             //GD.Print("MoveAlongPathTask");
             var bot = this.Node;
             var distance = bot.WalkSpeed * WorldState.I.TickLengthMs;
@@ -35,7 +36,6 @@ namespace Safelight.Actors
 
                 bot.PathSegmentGoal = start.LinearInterpolate(tip, distance / toNext);
                 //GD.Print(bot.GetInstanceId(), "-> Setting PathGoal:", bot.PathSegmentGoal);
-                this.Status = TaskStatus.Succeeded;
 
                 if (distance < toNext)
                     break;

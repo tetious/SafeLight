@@ -38,7 +38,7 @@ namespace Safelight.Actors
             var movedDistance = toNext - me.Position.DistanceTo(start);
             if (toMove - movedDistance < toMove / 4)
             {
-                this.Status = TaskStatus.Failed;
+                //this.Status = TaskStatus.Failed;
             }
         }
     }

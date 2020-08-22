@@ -4,6 +4,17 @@ using Godot;
 
 namespace Safelight.Actors
 {
+
+    public class FindBaddies : BehaviorTreeTask<Bot>
+    {
+        public FindBaddies(Bot node, Func<bool> guard = null) : base(node, guard) { }
+
+        public override void Run(float delta)
+        {
+            var me = this.Node;
+        }
+    }
+
     public class StandingOnResourceTask : BehaviorTreeTask<Bot>
     {
         public StandingOnResourceTask(Bot node, Func<bool> guard = null) : base(node, guard) { }

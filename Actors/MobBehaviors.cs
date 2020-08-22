@@ -30,7 +30,7 @@ namespace Safelight.Actors
 
             if (target != Vector2.Zero && me.Target != target)
             {
-                GD.Print("NEW TARGET");
+                //GD.Print("NEW TARGET");
                 me.Path = me.World.Map.GetPath(me.GlobalPosition, target).ToList();
                 me.Target = target;
                 this.Status = TaskStatus.Succeeded;
