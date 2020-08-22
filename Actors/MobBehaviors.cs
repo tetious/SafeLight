@@ -6,7 +6,7 @@ namespace Safelight.Actors
 {
     public class FindLight : BehaviorTreeTask<Mob>
     {
-        public override void Run()
+        public override void Run(float delta)
         {
             var me = this.Node;
 
@@ -28,17 +28,16 @@ namespace Safelight.Actors
                 }
             }
 
-            if (target != Vector2.Zero && me.TargetLight != target)
+            if (target != Vector2.Zero && me.Target != target)
             {
                 GD.Print("NEW TARGET");
                 me.Path = me.World.Map.GetPath(me.GlobalPosition, target).ToList();
-                me.TargetLight = target;
+                me.Target = target;
                 this.Status = TaskStatus.Succeeded;
             }
             else
             {
-                GD.Print("F TARGET");
-
+                //GD.Print("F TARGET");
                 this.Status = TaskStatus.Failed;
             }
         }

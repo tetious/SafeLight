@@ -8,7 +8,7 @@ namespace Safelight.Actors
     {
         public StandingOnResourceTask(Bot node, Func<bool> guard = null) : base(node, guard) { }
 
-        public override void Run()
+        public override void Run(float delta)
         {
             var overlappingAreas = this.Node.GetOverlappingAreas().Cast<Area2D>();
             var resource = overlappingAreas.OfType<WorldResource>().FirstOrDefault();
@@ -30,7 +30,7 @@ namespace Safelight.Actors
     {
         public GatherResourceTask(Bot node, Func<bool> guard = null) : base(node, guard) { }
 
-        public override void Run()
+        public override void Run(float delta)
         {
             if (this.Node?.ResourceAtFoot == null)
             {
@@ -47,7 +47,7 @@ namespace Safelight.Actors
     {
         public FindNearestResource(Bot node, Func<bool> guard = null) : base(node, guard) { }
 
-        public override void Run()
+        public override void Run(float delta)
         {
             var bot = this.Node;
             var resources = bot.World.GetNode("Map/Resources").GetChildren().Cast<WorldResource>().Where(r => r.Claimed == false).ToArray();

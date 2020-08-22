@@ -2,22 +2,21 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using Godot.Collections;
-using Safelight.Props;
 
 
 namespace Safelight.Actors
 {
-    public class Mob : KinematicBody2D, IPathed
+    public class Mob : KinematicBody2D, IPathed, ITargeted
     {
         public WorldManager World { get; private set; }
 
         public int WalkSpeed { get; } = 100;
 
-        public Vector2 TargetLight = Vector2.Zero;
+        public Vector2 Target { get; set; } = Vector2.Zero;
 
         public List<Vector2> Path { get; set; } = new List<Vector2>();
 
-        public Vector2 PathGoal { get; set; }
+        public Vector2 PathSegmentGoal { get; set; }
 
         [Export]
         public int SightDistance { get; set; } = 400;
@@ -45,12 +44,10 @@ namespace Safelight.Actors
             }
         }
 
-        public bool IsPathing => this.Path.Any() || this.PathGoal != Vector2.Zero;
-
         public Mob()
         {
-            // move toward by default, build path if we get stuck
-            this.root = new ParallelSequence(null, new FindLight(this, () => !this.IsPathing || this.HasMovedOneTile), new MoveAlongPathTask<Mob>(this));
+            var move = new Selector(new MoveTowardTarget<Mob>(this));
+            this.root = new Sequence(move, new FindLight(this));
         }
 
         public override void _Ready()
@@ -87,29 +84,7 @@ namespace Safelight.Actors
 
         public override void _PhysicsProcess(float delta)
         {
-            if (this.PathGoal != Vector2.Zero)
-            {
-                var start = this.Position;
-                var toNext = start.DistanceTo(this.PathGoal);
-                if (toNext < 1)
-                {
-                    this.Position = this.PathGoal;
-                }
-                else
-                {
-                    this.Position = this.Position.LinearInterpolate(this.PathGoal, this.WalkSpeed * delta / toNext);
-                }
-
-                if (this.Position == this.PathGoal)
-                {
-                    GD.Print("Hit dest! ", this.PathGoal);
-                    this.PathGoal = Vector2.Zero;
-                }
-
-                this.distanceMoved += this.Position.DistanceTo(start);
-            }
-
-            this.root.Run();
+            this.root.Run(delta);
             this.Update();
         }
     }

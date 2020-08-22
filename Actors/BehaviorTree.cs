@@ -18,7 +18,7 @@ namespace Safelight.Actors
 
         public BehaviorTreeTask[] Children => this.children.Where(c => c.Guard == null || c.Guard()).ToArray();
 
-        public abstract void Run();
+        public abstract void Run(float delta);
 
         public virtual void Reset()
         {
@@ -47,28 +47,29 @@ namespace Safelight.Actors
 
     public class ParallelSequence : BehaviorTreeTask
     {
-        public override void Run()
+        public override void Run(float delta)
         {
             var children = this.Children;
-            if (!children.Any()) return;
+            if (!children.Any())
+            {
+                this.Status = TaskStatus.Succeeded;
+            }
+
             this.Status = TaskStatus.Running;
             foreach (var child in children)
             {
-                if (child.Status == TaskStatus.Running || child.Status == TaskStatus.Fresh) child.Run();
-
-                if (child.Status == TaskStatus.Failed)
+                if (child.Status == TaskStatus.Running || child.Status == TaskStatus.Fresh)
                 {
-                    child.Reset();
-                    continue;
+                    child.Run(delta);
                 }
-
-                if (child.Status == TaskStatus.Succeeded)
+                else
                 {
                     child.Reset();
-                    continue;
                 }
             }
         }
+
+        public ParallelSequence(params BehaviorTreeTask[] children) : this(null, children) { }
 
         public ParallelSequence(Func<bool> guard = null, params BehaviorTreeTask[] children) : base(guard)
         {
@@ -78,13 +79,13 @@ namespace Safelight.Actors
 
     public class Selector : BehaviorTreeTask
     {
-        public override void Run()
+        public override void Run(float delta)
         {
             if (!this.Children.Any()) return;
             this.Status = TaskStatus.Running;
             foreach (var child in this.Children)
             {
-                if (child.Status == TaskStatus.Running || child.Status == TaskStatus.Fresh) child.Run();
+                if (child.Status == TaskStatus.Running || child.Status == TaskStatus.Fresh) child.Run(delta);
 
                 if (child.Status == TaskStatus.Running) return;
 
@@ -103,6 +104,8 @@ namespace Safelight.Actors
             }
         }
 
+        public Selector(params BehaviorTreeTask[] children) : this(null, children) { }
+
         public Selector(Func<bool> guard = null, params BehaviorTreeTask[] children) : base(guard)
         {
             this.AddChildren(children);
@@ -111,19 +114,20 @@ namespace Safelight.Actors
 
     public class Sequence : BehaviorTreeTask
     {
-        public override void Run()
+        public override void Run(float delta)
         {
-            if (!this.Children.Any()) return;
+            var children = this.Children;
+            if (!children.Any()) return;
             this.Status = TaskStatus.Running;
-            foreach (var child in this.Children)
+            foreach (var child in children)
             {
-                if (child.Status == TaskStatus.Running || child.Status == TaskStatus.Fresh) child.Run();
+                if (child.Status == TaskStatus.Running || child.Status == TaskStatus.Fresh) child.Run(delta);
 
                 if (child.Status == TaskStatus.Running) return;
 
                 if (child.Status == TaskStatus.Succeeded)
                 {
-                    this.Status = TaskStatus.Succeeded;
+                    child.Reset();
                 }
                 else if (child.Status == TaskStatus.Failed)
                 {
@@ -133,6 +137,8 @@ namespace Safelight.Actors
                 }
             }
         }
+
+        public Sequence(params BehaviorTreeTask[] children) : this(null, children) { }
 
         public Sequence(Func<bool> guard = null, params BehaviorTreeTask[] children) : base(guard)
         {

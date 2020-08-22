@@ -22,18 +22,17 @@ public class Bot : Area2D, IPathed
 
     public List<Vector2> Path { get; set; } = new List<Vector2>();
 
-    public Vector2 PathGoal { get; set; } = Vector2.Zero;
-
-    public bool IsPathing => this.Path.Any() || this.PathGoal != Vector2.Zero;
+    public Vector2 PathSegmentGoal { get; set; } = Vector2.Zero;
 
     public Bot()
     {
         var gatherer = new Selector(() => this.Type == BotType.Gatherer,
-            new Sequence(null, new StandingOnResourceTask(this), new GatherResourceTask(this)),
+            new Sequence(new StandingOnResourceTask(this), new GatherResourceTask(this)),
             new FindNearestResource(this)
         );
 
-        this.root = new Selector(null, new MoveAlongPathTask<Bot>(this, () => this.IsPathing), gatherer);
+        var move = new Selector(new MoveTowardPathSegmentGoalTask<Bot>(this), new NextPathSegmentTask<Bot>(this));
+        this.root = new Selector(move, gatherer);
     }
 
     public override void _Ready()
@@ -49,34 +48,14 @@ public class Bot : Area2D, IPathed
             this.DrawCircle(this.Path.Last() - this.Position, 2, Colors.Aqua);
         }
 
-        if (this.PathGoal != Vector2.Zero) this.DrawCircle(this.PathGoal - this.Position, 2, Colors.Pink);
+        if (this.PathSegmentGoal != Vector2.Zero) this.DrawCircle(this.PathSegmentGoal - this.Position, 2, Colors.Pink);
     }
 
     public override void _Process(float delta) { }
 
     public override void _PhysicsProcess(float delta)
     {
-        if (this.PathGoal != Vector2.Zero)
-        {
-            var toNext = this.Position.DistanceTo(this.PathGoal);
-            if (toNext < 1)
-            {
-                this.Position = this.PathGoal;
-            }
-            else
-            {
-                this.Position = this.Position.LinearInterpolate(this.PathGoal, this.WalkSpeed * delta / toNext);
-            }
-
-            if (this.Position == this.PathGoal)
-            {
-                GD.Print("Hit dest! ", this.PathGoal);
-                this.PathGoal = Vector2.Zero;
-            }
-        }
-
         this.Update();
-
-        this.root.Run();
+        this.root.Run(delta);
     }
 }

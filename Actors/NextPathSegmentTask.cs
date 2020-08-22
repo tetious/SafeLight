@@ -9,26 +9,22 @@ namespace Safelight.Actors
     {
         int WalkSpeed { get; }
 
-        List<Vector2> Path { get; }
+        Vector2 PathSegmentGoal { get; set; }
 
-        Vector2 PathGoal { get; set; }
+        List<Vector2> Path { get; }
     }
 
-    public class MoveAlongPathTask<T> : BehaviorTreeTask<T>
+    public class NextPathSegmentTask<T> : BehaviorTreeTask<T>
         where T : Node2D, IPathed
     {
-        public MoveAlongPathTask(T node, Func<bool> guard = null) : base(node, guard)
-        {
-            if (guard == null) guard = () => node.Path.Any() || node.PathGoal != Vector2.Zero;
-        }
+        public NextPathSegmentTask(T node, Func<bool> guard = null) : base(node,
+            guard ?? (() => node.Path.Any() || node.PathSegmentGoal != Vector2.Zero)) { }
 
-        public override void Run()
+        public override void Run(float delta)
         {
             //GD.Print("MoveAlongPathTask");
             var bot = this.Node;
             var distance = bot.WalkSpeed * WorldState.I.TickLengthMs;
-            this.Status = bot.Path.Any() || bot.PathGoal != Vector2.Zero ? TaskStatus.Running : TaskStatus.Succeeded;
-            if (bot.PathGoal != Vector2.Zero) return;
 
             var start = bot.Position;
             //GD.Print(string.Join(",", bot.Path));
@@ -37,15 +33,16 @@ namespace Safelight.Actors
                 var tip = bot.Path.First();
                 var toNext = start.DistanceTo(tip);
 
-                bot.PathGoal = start.LinearInterpolate(tip, distance / toNext);
-                //GD.Print("Setting PathGoal:", bot.PathGoal);
+                bot.PathSegmentGoal = start.LinearInterpolate(tip, distance / toNext);
+                //GD.Print(bot.GetInstanceId(), "-> Setting PathGoal:", bot.PathSegmentGoal);
+                this.Status = TaskStatus.Succeeded;
 
                 if (distance < toNext)
                     break;
 
                 distance -= toNext;
                 start = tip;
-                bot.PathGoal = tip;
+                bot.PathSegmentGoal = tip;
                 bot.Path.RemoveAt(0);
             }
         }
