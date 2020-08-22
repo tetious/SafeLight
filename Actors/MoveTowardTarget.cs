@@ -11,7 +11,7 @@ namespace Safelight.Actors
     }
 
     public class MoveTowardTarget<T> : BehaviorTreeTask<T>
-        where T : Node2D, ITargeted
+        where T : KinematicBody2D, ITargeted
     {
         public MoveTowardTarget(T node, Func<bool> guard = null) : base(node,
             guard ?? (() => node.Target != Vector2.Zero && node.Position != node.Target)) { }
@@ -23,16 +23,16 @@ namespace Safelight.Actors
             if (this.Node.Target == Vector2.Zero) GD.PrintErr("Target is 0,0 for ", this.Node.GetInstanceId());
 
             var me = this.Node;
-            var start = me.Position;
-            var toNext = start.DistanceTo(me.Target);
-            var toMove = me.WalkSpeed * delta / toNext;
-            if (toNext < 1)
+            var startPosition = me.Position;
+            var distanceToTarget = startPosition.DistanceTo(me.Target);
+            var toMove = me.WalkSpeed;
+            if (distanceToTarget < 1)
             {
                 me.Position = me.Target;
             }
             else
             {
-                me.Position = me.Position.LinearInterpolate(me.Target, toMove);
+                me.MoveAndSlide(me.Position.DirectionTo(me.Target) * toMove);
             }
 
             if (me.Position == me.Target)
@@ -42,11 +42,11 @@ namespace Safelight.Actors
                 return;
             }
 
-            var movedDistance = toNext - me.Position.DistanceTo(start);
-            if (movedDistance < 0.1 && toNext > 1)
-            {
-                GD.Print($"[{me.GetInstanceId()}] {toNext} Only moved {movedDistance} and expected to move at least {toMove / 2}.");
+            var movedDistance = distanceToTarget - me.Position.DistanceTo(me.Target);
 
+            if (movedDistance < 1 && distanceToTarget > 1)
+            {
+                GD.Print($"[{me.GetInstanceId()}] {distanceToTarget} Only moved {movedDistance}.");
                 this.Status = TaskStatus.Failed;
             }
         }

@@ -28,22 +28,6 @@ namespace Safelight.Actors
 
         private readonly BehaviorTreeTask root;
 
-        private float distanceMoved = 0;
-
-        private bool HasMovedOneTile
-        {
-            get
-            {
-                if (this.distanceMoved > 32)
-                {
-                    this.distanceMoved = 0;
-                    return true;
-                }
-
-                return false;
-            }
-        }
-
         public Mob()
         {
             var move = new Selector(new MoveTowardTarget<Mob>(this));
