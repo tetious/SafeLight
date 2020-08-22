@@ -14,8 +14,6 @@ namespace Safelight.Actors
 
         public Func<bool> Guard { get; }
 
-        public Node Node { get; }
-
         private List<BehaviorTreeTask> children = new List<BehaviorTreeTask>();
 
         public BehaviorTreeTask[] Children => this.children.Where(c => c.Guard == null || c.Guard()).ToArray();
@@ -30,55 +28,51 @@ namespace Safelight.Actors
 
         public void AddChildren(params BehaviorTreeTask[] children) => this.children.AddRange(children);
 
-        protected BehaviorTreeTask(Node node, Func<bool> guard = null)
+        protected BehaviorTreeTask(Func<bool> guard = null)
+        {
+            this.Guard = guard;
+        }
+    }
+
+    public abstract class BehaviorTreeTask<T> : BehaviorTreeTask
+        where T : Node
+    {
+        public T Node { get; }
+
+        protected BehaviorTreeTask(T node, Func<bool> guard = null) : base(guard)
         {
             this.Node = node;
-            this.Guard = guard;
         }
     }
 
     public class Selector : BehaviorTreeTask
     {
-        private int currentTaskIndex = 0;
-
-        public override void Reset()
-        {
-            this.currentTaskIndex = 0;
-            base.Reset();
-        }
-
         public override void Run()
         {
             if (!this.Children.Any()) return;
             this.Status = TaskStatus.Running;
-            var child = this.Children[this.currentTaskIndex];
-
-            if (child.Status == TaskStatus.Running || child.Status == TaskStatus.Fresh)
+            foreach (var child in this.Children)
             {
-                child.Run();
-            }
+                if (child.Status == TaskStatus.Running || child.Status == TaskStatus.Fresh) child.Run();
 
-            if (child.Status == TaskStatus.Failed)
-            {
-                this.currentTaskIndex++;
-                if (this.currentTaskIndex == this.Children.Length)
+                if (child.Status == TaskStatus.Running) return;
+
+                if (child.Status == TaskStatus.Failed)
                 {
-                    this.currentTaskIndex = 0;
+                    this.Status = TaskStatus.Failed;
+                    continue;
                 }
-                else
-                {
-                    this.Run();
-                }
-            }
 
-            if (child.Status == TaskStatus.Succeeded)
-            {
-                this.Reset();
-                this.Status = TaskStatus.Succeeded;
+                if (child.Status == TaskStatus.Succeeded)
+                {
+                    this.Reset();
+                    this.Status = TaskStatus.Succeeded;
+                    return;
+                }
             }
         }
 
-        public Selector(Func<bool> guard = null, params BehaviorTreeTask[] children) : base(null, guard)
+        public Selector(Func<bool> guard = null, params BehaviorTreeTask[] children) : base(guard)
         {
             this.AddChildren(children);
         }
@@ -86,44 +80,30 @@ namespace Safelight.Actors
 
     public class Sequence : BehaviorTreeTask
     {
-        private int currentTaskIndex = 0;
-
-        public override void Reset()
-        {
-            this.currentTaskIndex = 0;
-            base.Reset();
-        }
-
         public override void Run()
         {
             if (!this.Children.Any()) return;
             this.Status = TaskStatus.Running;
-            var child = this.Children[this.currentTaskIndex];
-
-            if (child.Status == TaskStatus.Running || child.Status == TaskStatus.Fresh) child.Run();
-
-            if (child.Status == TaskStatus.Succeeded)
+            foreach (var child in this.Children)
             {
-                this.currentTaskIndex++;
-                if (this.currentTaskIndex == this.Children.Length)
+                if (child.Status == TaskStatus.Running || child.Status == TaskStatus.Fresh) child.Run();
+
+                if (child.Status == TaskStatus.Running) return;
+
+                if (child.Status == TaskStatus.Succeeded)
                 {
-                    this.Reset();
                     this.Status = TaskStatus.Succeeded;
                 }
-                else
+                else if (child.Status == TaskStatus.Failed)
                 {
-                    this.Run();
+                    this.Reset();
+                    this.Status = TaskStatus.Failed;
+                    return;
                 }
-            }
-
-            if (child.Status == TaskStatus.Failed)
-            {
-                this.Reset();
-                this.Status = TaskStatus.Failed;
             }
         }
 
-        public Sequence(Func<bool> guard = null, params BehaviorTreeTask[] children) : base(null, guard)
+        public Sequence(Func<bool> guard = null, params BehaviorTreeTask[] children) : base(guard)
         {
             this.AddChildren(children);
         }

@@ -4,10 +4,10 @@ using System;
 public class WorldResource : Area2D
 {
     [Export]
-    public int AvailableResources { get; private set; } = 10000;
+    public decimal AvailableResources { get; private set; } = 10000;
 
     [Export]
-    public int BaseGatherRate { get; private set; } = 10;
+    public decimal BaseGatherRate { get; private set; } = .1m;
 
     public bool Claimed = false;
 
@@ -22,7 +22,7 @@ public class WorldResource : Area2D
         this.Claimed = false;
     }
 
-    public int PopResources()
+    public decimal PopResources()
     {
         if (this.AvailableResources == 0) return 0;
         this.AvailableResources -= this.BaseGatherRate;
@@ -31,6 +31,7 @@ public class WorldResource : Area2D
         {
             this.QueueFree();
         }
+
         return gathered;
     }
 

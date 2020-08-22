@@ -41,7 +41,6 @@ position = Vector2( 440, 248 )
 
 [node name="Crystal" parent="Map/Resources" instance=ExtResource( 8 )]
 position = Vector2( 296, 312 )
-AvailableResources = 50
 
 [node name="Crystal2" parent="Map/Resources" instance=ExtResource( 8 )]
 position = Vector2( 296, 328 )
@@ -61,15 +60,3 @@ margin_top = 30.0
 position = Vector2( 200, 200 )
 collision_mask = 10
 Type = 1
-
-[node name="Bot2" parent="Bots" instance=ExtResource( 3 )]
-position = Vector2( 204, 232 )
-
-[node name="Bot3" parent="Bots" instance=ExtResource( 3 )]
-position = Vector2( 204, 248 )
-
-[node name="Bot4" parent="Bots" instance=ExtResource( 3 )]
-position = Vector2( 204, 184 )
-
-[node name="Bot5" parent="Bots" instance=ExtResource( 3 )]
-position = Vector2( 176, 216 )

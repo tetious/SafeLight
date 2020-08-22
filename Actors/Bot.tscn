@@ -8,7 +8,7 @@
 polygon = PoolVector2Array( -6.58399, 0.666855, -2.41261, 7.67477, 2.59304, 7.59134, 6.59756, 0.666855 )
 
 [sub_resource type="CapsuleShape2D" id=2]
-radius = 7.76776
+radius = 5.09811
 height = 3.8258
 
 [node name="Bot" type="Area2D"]

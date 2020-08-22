@@ -2,164 +2,109 @@ using System;
 using System.Collections.Generic;
 using Godot;
 using System.Linq;
+using Safelight.Actors;
 
 public enum BotType { None, Gatherer }
 
-namespace Safelight.Actors
+public class Bot : Area2D, IPathed
 {
-    public class StandingOnResourceTask : BehaviorTreeTask
-    {
-        public StandingOnResourceTask(Node node, Func<bool> guard = null) : base(node, guard) { }
+    public WorldManager World { get; private set; }
 
-        public override void Run()
+    private readonly Selector root;
+
+    public WorldResource ResourceAtFoot { get; set; } = null;
+
+    [Export]
+    public int WalkSpeed { get; set; } = 100;
+
+    [Export]
+    public BotType Type { get; set; }
+
+    public List<Vector2> Path { get; set; } = new List<Vector2>();
+
+    public Vector2 PathGoal { get; set; } = Vector2.Zero;
+
+    public bool IsPathing => this.Path.Any() || this.PathGoal != Vector2.Zero;
+
+    public Bot()
+    {
+        var gatherer = new Selector(() => this.Type == BotType.Gatherer,
+            new Sequence(null, new StandingOnResourceTask(this), new GatherResourceTask(this)),
+            new FindNearestResource(this)
+        );
+
+        this.root = new Selector(null, new MoveAlongPathTask<Bot>(this, () => this.IsPathing), gatherer);
+    }
+
+    public override void _Ready()
+    {
+        this.World = (WorldManager)this.FindParent("WorldManager");
+        WorldState.I.Connect("WorldTick", this, "WorldTick");
+    }
+
+    public override void _Draw()
+    {
+        if (this.Path.Any())
         {
-            var bot = this.Node as Bot;
-            var overlappingAreas = bot.GetOverlappingAreas().Cast<Area2D>();
-            var resource = overlappingAreas.OfType<WorldResource>().FirstOrDefault();
-            if (resource != null)
+            this.DrawMultiline(this.Path.Select(i => i - this.Position).ToArray(), Colors.Aqua);
+            this.DrawCircle(this.Path.Last() - this.Position, 2, Colors.Aqua);
+        }
+
+        if (this.PathGoal != Vector2.Zero) this.DrawCircle(this.PathGoal - this.Position, 2, Colors.Pink);
+    }
+
+    public override void _Process(float delta) { }
+
+    public override void _PhysicsProcess(float delta)
+    {
+        if (this.PathGoal != Vector2.Zero)
+        {
+            var toNext = this.Position.DistanceTo(this.PathGoal);
+            if (toNext < 1)
             {
-                GD.Print("StandingOnResourceTask: Standing on a resource!");
-                bot.ResourceAtFoot = resource;
-                this.Status = TaskStatus.Succeeded;
+                this.Position = this.PathGoal;
             }
             else
             {
-                GD.Print("StandingOnResourceTask: NOT Standing on a resource!");
-                bot.ResourceAtFoot = null;
-                this.Status = TaskStatus.Failed;
+                this.Position = this.Position.LinearInterpolate(this.PathGoal, this.WalkSpeed * delta / toNext);
+            }
+
+            if (this.Position == this.PathGoal)
+            {
+                GD.Print("Hit dest! ", this.PathGoal);
+                this.PathGoal = Vector2.Zero;
             }
         }
+
+        this.Update();
+
+        this.root.Run();
     }
 
-    public class MoveAlongPathTask : BehaviorTreeTask
+    private void WorldTick()
     {
-        public MoveAlongPathTask(Node node, Func<bool> guard = null) : base(node, guard) { }
-
-        public override void Run()
-        {
-            GD.Print("MoveAlongPathTask");
-            var bot = this.Node as Bot;
-            this.Status = bot.Path.Any() ? TaskStatus.Running : TaskStatus.Succeeded;
-        }
+//        if (this.Path.Count != 0) this.MoveAlongPath(this.WalkSpeed * WorldState.I.TickLengthMs);
     }
 
-    public class GatherResourceTask : BehaviorTreeTask
+    private void MoveAlongPath(float distance)
     {
-        public GatherResourceTask(Node node, Func<bool> guard = null) : base(node, guard) { }
-
-        public override void Run()
+        var start = this.Position;
+        GD.Print(string.Join(",", this.Path));
+        while (this.Path.Any())
         {
-            var bot = this.Node as Bot;
+            var tip = this.Path.First();
+            var toNext = start.DistanceTo(tip);
 
-            if (bot?.ResourceAtFoot == null)
-            {
-                this.Status = TaskStatus.Failed;
-            }
+            this.PathGoal = start.LinearInterpolate(tip, distance / toNext);
+            GD.Print("Setting PathGoal:", this.PathGoal);
 
-            WorldState.I.AddCrystals(bot.ResourceAtFoot.PopResources());
-            this.Status = TaskStatus.Succeeded;
-        }
-    }
+            if (distance < toNext)
+                break;
 
-    public class FindNearestResource : BehaviorTreeTask
-    {
-        public FindNearestResource(Node node, Func<bool> guard = null) : base(node, guard) { }
-
-        public override void Run()
-        {
-            var bot = this.Node as Bot;
-            var resources = bot.World.GetNode("Map/Resources").GetChildren().Cast<WorldResource>().Where(r => r.Claimed == false).ToArray();
-            if (resources.Length > 0)
-            {
-                var closest = resources.First();
-                foreach (var resource in resources)
-                {
-                    if (resource.GlobalPosition.DistanceTo(bot.GlobalPosition) < closest.GlobalPosition.DistanceTo(bot.GlobalPosition))
-                    {
-                        closest = resource;
-                    }
-                }
-
-                bot.Path = bot.World.GetNode<Map>("Map").GetPath(bot.Position, closest.Position).ToList();
-                closest.Claimed = true;
-                GD.Print("FindNearestResource: Found a resource!");
-
-                this.Status = TaskStatus.Succeeded;
-            }
-            else
-            {
-                GD.Print("FindNearestResource: Didn't find a resource!");
-                this.Status = TaskStatus.Failed;
-            }
-        }
-    }
-
-    public class Bot : Area2D
-    {
-        public WorldManager World { get; private set; }
-
-        private readonly Selector root;
-
-        public WorldResource ResourceAtFoot { get; set; }= null;
-
-        public Bot()
-        {
-            this.root = new Selector();
-            var gatherer = new Selector(() => this.Type == BotType.Gatherer,
-                new Sequence(null, new StandingOnResourceTask(this), new GatherResourceTask(this)),
-                new FindNearestResource(this)
-            );
-            this.root.AddChildren(new MoveAlongPathTask(this, () => this.Path.Any()), gatherer);
-        }
-
-        [Export]
-        public int WalkSpeed { get; set; } = 400;
-
-        [Export]
-        public BotType Type { get; set; }
-
-        public List<Vector2> Path { get; set; } = new List<Vector2>();
-
-        public override void _Ready()
-        {
-            this.World = (WorldManager)this.FindParent("WorldManager");
-            WorldState.I.Connect("WorldTick", this, "WorldTick");
-        }
-
-        public override void _Draw() { }
-
-        public override void _Process(float delta)
-        {
-            if (this.Path.Count != 0) this.MoveAlongPath(this.WalkSpeed * delta);
-        }
-
-        private void WorldTick()
-        {
-            this.root.Run();
-        }
-
-        private void MoveAlongPath(float distance)
-        {
-            var start = this.Position;
-            for (var i = 0; i < this.Path.Count; i++)
-            {
-                var tip = this.Path.First();
-                var toNext = start.DistanceTo(tip);
-                if (distance <= toNext && distance >= 0)
-                {
-                    this.Position = start.LinearInterpolate(tip, distance / toNext);
-                    break;
-                }
-
-                if (distance < 0)
-                {
-                    this.Position = tip;
-                }
-
-                distance -= toNext;
-                start = tip;
-                this.Path.RemoveAt(0);
-            }
+            distance -= toNext;
+            start = tip;
+            this.PathGoal = tip;
+            this.Path.RemoveAt(0);
         }
     }
 }

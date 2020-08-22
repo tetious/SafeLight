@@ -1,6 +1,6 @@
 extends Node2D
 
-export var eu_tick = 10
+export var eu_tick = 1
 
 func _ready() -> void:
 	# Can't use the global name here for some reason :(

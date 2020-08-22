@@ -24,16 +24,20 @@ public class WorldState : Node
 
     public int StoredPower { get; private set; }
 
-    public int CrystalCount { get; private set; }
+    private decimal crystalCount;
+
+    public int CrystalCount => (int)Math.Floor(this.crystalCount);
 
     public int MaxPower { get; private set; } = 100;
+
+    public float TickLengthMs { get; private set; } = 0.1f;
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
         this.tickTimer.Connect("timeout", this, "tickTimer_timeout");
         this.AddChild(this.tickTimer);
-        this.tickTimer.Start();
+        this.tickTimer.Start(this.TickLengthMs);
     }
 
     public void tickTimer_timeout() => this.EmitSignal("WorldTick");
@@ -51,9 +55,9 @@ public class WorldState : Node
 
         return this.Gatherers;
     }
-    public void AddCrystals(int num)
+    public void AddCrystals(decimal num)
     {
-        this.CrystalCount += num;
+        this.crystalCount += num;
         this.EmitSignal("StateChanged");
     }
 
