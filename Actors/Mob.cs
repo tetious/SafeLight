@@ -10,7 +10,8 @@ namespace Safelight.Actors
     {
         public WorldManager World { get; private set; }
 
-        public int WalkSpeed { get; } = 100;
+        [Export]
+        public int WalkSpeed { get; set; } = 100;
 
         public Vector2 Target { get; set; } = Vector2.Zero;
 

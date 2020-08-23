@@ -80,7 +80,7 @@ public class Bot : Area2D, IPathed
         var laserShot = this.laserShot.Instance() as LaserShot;
         laserShot.Position = this.Position;
         laserShot.Velocity = this.Position.DirectionTo(spot) * 400;
-        laserShot.LookAt(spot);
+        laserShot.Rotation = this.Position.DirectionTo(spot).Angle();
         this.GetParent().AddChild(laserShot);
     }
 

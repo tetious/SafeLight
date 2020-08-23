@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using Safelight.Actors;
 
 public class LaserShot : Area2D
 {
@@ -18,12 +19,13 @@ public class LaserShot : Area2D
 
     public void BodyEntered(Node body)
     {
-        body.EmitSignal("Hit", 10);
+        if(body is Mob) body.EmitSignal("Hit", 10);
         this.QueueFree();
     }
 
     public override void _PhysicsProcess(float delta)
     {
+        if (this.IsQueuedForDeletion()) return;
         if(this.startPoint == Vector2.Zero) this.startPoint = this.Position;
         this.Position += this.Velocity * delta;
         if(this.Position.DistanceTo(this.startPoint) > 500) this.QueueFree();

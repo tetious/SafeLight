@@ -16,6 +16,16 @@ public class Map : Node2D
         this.tileMap = this.GetNode<TileMap>("TileMap");
         this.usedRect = this.tileMap.GetUsedRect();
 
+        foreach (Area2D prop in this.GetNode("Props").GetChildren())
+        {
+            var shape = prop.GetNode<CollisionShape2D>("Shape");
+
+            var body = new StaticBody2D();
+            body.AddChild(shape.Duplicate());
+            body.CollisionLayer = 1024;
+            prop.AddChild(body);
+        }
+
         var usedTiles = this.tileMap.GetUsedCells().Cast<Vector2>().ToArray();
         foreach (var position in usedTiles)
         {
@@ -39,9 +49,9 @@ public class Map : Node2D
         bool TileIsOccupied(Vector2 position)
         {
             var tileTransform = new Transform2D(0, this.tileMap.MapToWorld(position) + new Vector2(8, 8));
-            var things = this.GetNode("Things").GetChildren().Cast<StaticBody2D>()
+            var things = this.GetNode("Props").GetChildren().Cast<Area2D>()
                 .Where(b => b.GetCollisionLayerBit(10) &&
-                    b.GetNode<CollisionShape2D>("CollisionShape2D").Shape.Collide(b.GlobalTransform, tileBounds, tileTransform));
+                    b.GetNode<CollisionShape2D>("Shape").Shape.Collide(b.GlobalTransform, tileBounds, tileTransform));
 
             return things.Any();
         }
@@ -72,6 +82,22 @@ public class Map : Node2D
         var startId = this.IdForPoint(this.tileMap.WorldToMap(start));
         var endId = this.IdForPoint(this.tileMap.WorldToMap(end));
         return this.astar.GetPointPath(startId, endId).Select(p => this.tileMap.MapToWorld(p) + new Vector2(8, 8)).ToArray();
+    }
+
+    public Rect2 GetTileRect(Vector2 position)
+    {
+        var rawPos = this.tileMap.MapToWorld(this.tileMap.WorldToMap(position));
+        return new Rect2(rawPos + this.Position, this.tileMap.CellSize * 2);
+    }
+
+    public Vector2 GetBuildPosition(Vector2 position)
+    {
+        return this.tileMap.MapToWorld(this.tileMap.WorldToMap(position));
+    }
+
+    public (Texture texture, Vector2 offset) GetTileTexture(int index)
+    {
+        return (this.tileMap.TileSet.TileGetTexture(index), this.tileMap.TileSet.TileGetTextureOffset(index));
     }
 
     private int IdForPoint(Vector2 point)
