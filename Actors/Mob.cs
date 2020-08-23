@@ -34,10 +34,10 @@ namespace Safelight.Actors
 
         public Mob()
         {
-            var path = new Selector(new MoveTowardPathSegmentGoalTask<Mob>(this), new NextPathSegmentTask<Mob>(this));
+            var path = new Selector("Path", new MoveTowardPathSegmentGoalTask<Mob>(this), new NextPathSegmentTask<Mob>(this));
 
-            var move = new Selector(new MoveTowardTarget<Mob>(this), path);
-            this.root = new Sequence(move, new FindLight(this));
+            var move = new Selector("Move", new MoveTowardTarget<Mob>(this), path);
+            this.root = new Sequence("Root", move, new FindLight(this));
         }
 
         public override void _Ready()
@@ -80,6 +80,5 @@ namespace Safelight.Actors
         }
 
         public void OnHit(int damage) => GD.Print("HIT!!! ", damage);
-
     }
 }

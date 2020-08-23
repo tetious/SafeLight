@@ -48,6 +48,6 @@ namespace Safelight.Actors
             this.Node.LightTargets.Add((source, dest, obstacle));
         }
 
-        public FindLight(Mob node, Func<bool> guard = null) : base(node, guard) { }
+        public FindLight(Mob node, Func<BehaviorTreeTask, bool> guard = null) : base(node, guard) { }
     }
 }

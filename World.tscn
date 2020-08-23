@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=2]
+[gd_scene load_steps=18 format=2]
 
 [ext_resource path="res://WorldManager.cs" type="Script" id=1]
 [ext_resource path="res://1bit.tres" type="TileSet" id=2]
@@ -14,7 +14,6 @@
 [ext_resource path="res://GUI/solarpanel-icon.png" type="Texture" id=12]
 [ext_resource path="res://GUI/BuildButton.gd" type="Script" id=13]
 [ext_resource path="res://GUI/BuildButtonGroup.tres" type="ButtonGroup" id=14]
-[ext_resource path="res://Actors/Mob.tscn" type="PackedScene" id=15]
 
 [sub_resource type="AtlasTexture" id=1]
 atlas = ExtResource( 9 )
@@ -137,11 +136,8 @@ expand_icon = true
 script = ExtResource( 13 )
 propName = "SolarPanel"
 
-[node name="Mob" parent="." instance=ExtResource( 15 )]
-position = Vector2( 312, 472 )
-WalkSpeed = 80
-
 [node name="Bots" type="Node2D" parent="."]
 
 [node name="Bot" parent="Bots" instance=ExtResource( 3 )]
 position = Vector2( 248, 344 )
+Type = 2

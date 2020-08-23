@@ -6,8 +6,8 @@ namespace Safelight.Actors
     public class MoveTowardPathSegmentGoalTask<T> : BehaviorTreeTask<T>
         where T : Node2D, IPathed
     {
-        public MoveTowardPathSegmentGoalTask(T node, Func<bool> guard = null) : base(node,
-            guard ?? (() => node.PathSegmentGoal != Vector2.Zero)) { }
+        public MoveTowardPathSegmentGoalTask(T node, Func<BehaviorTreeTask, bool> guard = null) :
+            base(node, guard ?? (_ => node.PathSegmentGoal != Vector2.Zero)) { }
 
         public override void Run(float delta)
         {
@@ -19,7 +19,7 @@ namespace Safelight.Actors
             var start = me.Position;
             var toNext = start.DistanceTo(me.PathSegmentGoal);
             var toMove = me.WalkSpeed * delta / toNext;
-            if (toNext <  me.WalkSpeed * delta)
+            if (toNext < me.WalkSpeed * delta)
             {
                 me.Position = me.PathSegmentGoal;
             }
@@ -30,7 +30,7 @@ namespace Safelight.Actors
 
             if (me.Position == me.PathSegmentGoal)
             {
-                GD.Print("Hit dest! ", me.PathSegmentGoal);
+                //GD.Print("Hit dest! ", me.PathSegmentGoal);
                 me.PathSegmentGoal = Vector2.Zero;
                 this.Status = TaskStatus.Succeeded;
             }

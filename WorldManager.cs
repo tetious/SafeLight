@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Godot.Collections;
 using Safelight.Actors;
@@ -27,6 +28,8 @@ public class WorldManager : Node2D
     public SafeLight[] Lights { get; private set; } = new SafeLight[0];
 
     public Map Map { get; private set; }
+
+    public readonly HashSet<ulong> Claimed = new HashSet<ulong>();
 
     private Node buildGUI;
     private Node toBuild;

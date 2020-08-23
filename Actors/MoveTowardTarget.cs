@@ -13,8 +13,8 @@ namespace Safelight.Actors
     public class MoveTowardTarget<T> : BehaviorTreeTask<T>
         where T : KinematicBody2D, ITargeted
     {
-        public MoveTowardTarget(T node, Func<bool> guard = null) : base(node,
-            guard ?? (() => node.Target != Vector2.Zero && node.Position != node.Target)) { }
+        public MoveTowardTarget(T node, Func<BehaviorTreeTask, bool> guard = null) : base(node,
+            guard ?? (_ => node.Target != Vector2.Zero && node.Position != node.Target)) { }
 
         public override void Run(float delta)
         {

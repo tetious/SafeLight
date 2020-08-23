@@ -8,7 +8,7 @@ namespace Safelight.Actors
     {
         private readonly Func<int> delayMs;
 
-        public DelayTask(Func<int> delayMs, Func<bool> guard = null) : base(guard)
+        public DelayTask(Func<int> delayMs, Func<BehaviorTreeTask, bool> guard = null) : base(guard)
         {
             this.delayMs = delayMs;
         }
@@ -32,7 +32,7 @@ namespace Safelight.Actors
 
     public class ShootNearestBaddie : BehaviorTreeTask<Bot>
     {
-        public ShootNearestBaddie(Bot node, Func<bool> guard = null) : base(node, guard) { }
+        public ShootNearestBaddie(Bot node, Func<BehaviorTreeTask, bool> guard = null) : base(node, guard) { }
 
         public override void Run(float delta)
         {
@@ -58,7 +58,7 @@ namespace Safelight.Actors
 
     public class StandingOnResourceTask : BehaviorTreeTask<Bot>
     {
-        public StandingOnResourceTask(Bot node, Func<bool> guard = null) : base(node, guard) { }
+        public StandingOnResourceTask(Bot node, Func<BehaviorTreeTask, bool> guard = null) : base(node, guard) { }
 
         public override void Run(float delta)
         {
@@ -66,6 +66,7 @@ namespace Safelight.Actors
             var resource = overlappingAreas.OfType<WorldResource>().FirstOrDefault();
             if (resource != null)
             {
+                if (this.Node.ResourceAtFoot == null) GD.Print("StandingOnResourceTask: Standing on a resource!");
                 this.Node.ResourceAtFoot = resource;
                 this.Status = TaskStatus.Succeeded;
             }
@@ -80,7 +81,7 @@ namespace Safelight.Actors
 
     public class GatherResourceTask : BehaviorTreeTask<Bot>
     {
-        public GatherResourceTask(Bot node, Func<bool> guard = null) : base(node, guard) { }
+        public GatherResourceTask(Bot node, Func<BehaviorTreeTask, bool> guard = null) : base(node, guard) { }
 
         public override void Run(float delta)
         {
@@ -95,34 +96,53 @@ namespace Safelight.Actors
         }
     }
 
-    public class FindNearestResource : BehaviorTreeTask<Bot>
+    public class FindNearest<T> : BehaviorTreeTask<Bot>
+        where T : Node2D
     {
-        public FindNearestResource(Bot node, Func<bool> guard = null) : base(node, guard) { }
+        private readonly Node group;
+
+        public FindNearest(Bot node, Node group, Func<BehaviorTreeTask, bool> guard = null) : base(node, guard)
+        {
+            this.group = group;
+        }
 
         public override void Run(float delta)
         {
             var bot = this.Node;
-            var resources = bot.World.GetNode("Map/Resources").GetChildren().Cast<WorldResource>().Where(r => r.Claimed == false).ToArray();
-            if (resources.Length > 0)
+            var nodes = this.group.GetChildren();
+            if (nodes.Count > 0)
             {
-                var closest = resources.First();
-                foreach (var resource in resources)
+                Node2D closest = null;
+                foreach (var node in nodes)
                 {
-                    if (resource.GlobalPosition.DistanceTo(bot.GlobalPosition) < closest.GlobalPosition.DistanceTo(bot.GlobalPosition))
+                    if (node is T thing && !bot.World.Claimed.Contains(thing.GetInstanceId()))
                     {
-                        closest = resource;
+                        if (closest == null)
+                        {
+                            closest = thing;
+                            continue;
+                        }
+
+                        if (thing.GlobalPosition.DistanceTo(bot.GlobalPosition) < closest.GlobalPosition.DistanceTo(bot.GlobalPosition))
+                        {
+                            closest = thing;
+                        }
                     }
                 }
 
-                bot.Path = bot.World.GetNode<Map>("Map").GetPath(bot.Position, closest.Position).ToList();
-                closest.Claimed = true;
-                GD.Print("FindNearestResource: Found a resource!");
+                if (closest != null)
+                {
+                    bot.Path = bot.World.GetNode<Map>("Map").GetPath(bot.Position, closest.Position).ToList();
+                    bot.World.Claimed.Add(closest.GetInstanceId());
+                    GD.Print($"FindNearest: Found a {typeof(T)}:{closest.Name}!");
 
-                this.Status = TaskStatus.Succeeded;
+                    this.Status = TaskStatus.Succeeded;
+                }
             }
-            else
+
+            if (this.Status != TaskStatus.Succeeded)
             {
-                GD.Print("FindNearestResource: Didn't find a resource!");
+                GD.Print($"FindNearest: Didn't find a {typeof(T)}!");
                 this.Status = TaskStatus.Failed;
             }
         }

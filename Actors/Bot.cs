@@ -4,13 +4,13 @@ using Godot;
 using System.Linq;
 using Safelight.Actors;
 
-public enum BotType { None, Gatherer }
+public enum BotType { None, Gatherer, Builder }
 
 public class Bot : Area2D, IPathed
 {
     public WorldManager World { get; private set; }
 
-    private readonly BehaviorTreeTask root;
+    private BehaviorTreeTask root;
 
     public WorldResource ResourceAtFoot { get; set; } = null;
 
@@ -34,24 +34,27 @@ public class Bot : Area2D, IPathed
     public Rect2 SightRect => new Rect2(this.GlobalPosition - new Vector2(this.SightDistance, this.SightDistance) / 2,
         new Vector2(this.SightDistance, this.SightDistance));
 
-    public Bot()
-    {
-        var selfDefense = new Sequence(() => this.VisibleMobs.Any(), new ShootNearestBaddie(this), new DelayTask(() => 500));
-
-        var gatherer = new Selector(() => this.Type == BotType.Gatherer,
-            new Sequence(new StandingOnResourceTask(this), new GatherResourceTask(this)),
-            new FindNearestResource(this)
-        );
-
-        var move = new Selector(new MoveTowardPathSegmentGoalTask<Bot>(this), new NextPathSegmentTask<Bot>(this));
-        this.root = new ParallelSequence(move, selfDefense, gatherer);
-    }
+    public Bot() { }
 
     public override void _Ready()
     {
         this.World = (WorldManager)this.FindParent("WorldManager");
         this.GetNode<Area2D>("DetectionArea").Connect("body_entered", this, nameof(this.DetectedBodyEntered));
         this.GetNode<Area2D>("DetectionArea").Connect("body_exited", this, nameof(this.DetectedBodyExited));
+
+
+        var gatherer = new Selector(("Gatherer"), _ => this.Type == BotType.Gatherer,
+            new Sequence("ResourcePop", new StandingOnResourceTask(this), new GatherResourceTask(this)),
+            new FindNearest<WorldResource>(this, this.World.GetNode("Map/Resources"))
+        );
+
+        var builder = new Selector("Builder", _ => this.Type == BotType.Builder,
+            new FindNearest<Area2D>(this, this.World.GetNode("Map/ToBuild"))
+        );
+
+        var selfDefense = new Sequence("SelfDefense", _ => this.VisibleMobs.Any(), new ShootNearestBaddie(this), new DelayTask(() => 500));
+        var move = new Selector("Move", s => s.AnyCanRun, new MoveTowardPathSegmentGoalTask<Bot>(this), new NextPathSegmentTask<Bot>(this));
+        this.root = new Selector("Root", new Sequence("MoveSelfDefence", move, selfDefense), gatherer, builder);
     }
 
     public override void _Draw()

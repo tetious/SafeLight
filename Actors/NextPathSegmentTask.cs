@@ -17,8 +17,8 @@ namespace Safelight.Actors
     public class NextPathSegmentTask<T> : BehaviorTreeTask<T>
         where T : Node2D, IPathed
     {
-        public NextPathSegmentTask(T node, Func<bool> guard = null) : base(node,
-            guard ?? (() => node.Path.Any() || node.PathSegmentGoal != Vector2.Zero)) { }
+        public NextPathSegmentTask(T node, Func<BehaviorTreeTask, bool> guard = null) : base(node,
+            guard ?? (_ => node.Path.Any() && node.PathSegmentGoal == Vector2.Zero)) { }
 
         public override void Run(float delta)
         {
