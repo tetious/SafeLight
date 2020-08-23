@@ -21,6 +21,9 @@ namespace Safelight.Actors
         [Export]
         public int SightDistance { get; set; } = 400;
 
+        [Signal]
+        public delegate void Hit(int damage);
+
         public Rect2 SightRect => new Rect2(this.GlobalPosition - new Vector2(this.SightDistance, this.SightDistance) / 2,
             new Vector2(this.SightDistance, this.SightDistance));
 
@@ -30,13 +33,16 @@ namespace Safelight.Actors
 
         public Mob()
         {
-            var move = new Selector(new MoveTowardTarget<Mob>(this));
+            var path = new Selector(new MoveTowardPathSegmentGoalTask<Mob>(this), new NextPathSegmentTask<Mob>(this));
+
+            var move = new Selector(new MoveTowardTarget<Mob>(this), path);
             this.root = new Sequence(move, new FindLight(this));
         }
 
         public override void _Ready()
         {
             this.World = (WorldManager)this.FindParent("WorldManager");
+            this.Connect("Hit", this, "OnHit");
 //            WorldState.I.Connect("WorldTick", this, "WorldTick");
         }
 
@@ -68,10 +74,11 @@ namespace Safelight.Actors
 
         public override void _PhysicsProcess(float delta)
         {
-            //this.root.Run(delta);
+            this.root.Run(delta);
             this.Update();
         }
 
+        public void OnHit(int damage) => GD.Print("HIT!!! ", damage);
 
     }
 }

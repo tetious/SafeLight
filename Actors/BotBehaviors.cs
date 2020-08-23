@@ -4,14 +4,55 @@ using Godot;
 
 namespace Safelight.Actors
 {
-
-    public class FindBaddies : BehaviorTreeTask<Bot>
+    public class DelayTask : BehaviorTreeTask
     {
-        public FindBaddies(Bot node, Func<bool> guard = null) : base(node, guard) { }
+        private readonly Func<int> delayMs;
+
+        public DelayTask(Func<int> delayMs, Func<bool> guard = null) : base(guard)
+        {
+            this.delayMs = delayMs;
+        }
+
+        private float delay = 0;
+
+        public override void Run(float delta)
+        {
+            this.delay += delta * 1000;
+
+            this.Status = TaskStatus.Running;
+            if (this.delay >= this.delayMs()) this.Status = TaskStatus.Succeeded;
+        }
+
+        public override void Reset()
+        {
+            base.Reset();
+            this.delay = 0;
+        }
+    }
+
+    public class ShootNearestBaddie : BehaviorTreeTask<Bot>
+    {
+        public ShootNearestBaddie(Bot node, Func<bool> guard = null) : base(node, guard) { }
 
         public override void Run(float delta)
         {
             var me = this.Node;
+
+            if (me.VisibleMobs.Any() == false) return;
+
+            var nearest = me.VisibleMobs.First();
+            foreach (var mob in me.VisibleMobs.Skip(1))
+            {
+                if (mob.GlobalPosition.DistanceTo(me.GlobalPosition) < nearest.GlobalPosition.DistanceTo(me.GlobalPosition))
+                {
+                    nearest = mob;
+                }
+            }
+
+            GD.Print($"[{delta}]{me.GetInstanceId()}: shooting {nearest.GetInstanceId()}");
+            me.FireAt(nearest.GlobalPosition);
+
+            this.Status = TaskStatus.Succeeded;
         }
     }
 

@@ -16,13 +16,13 @@ namespace Safelight.Actors
 
         private List<BehaviorTreeTask> children = new List<BehaviorTreeTask>();
 
-        public BehaviorTreeTask[] Children => this.children.Where(c => c.Guard == null || c.Guard()).ToArray();
+        public BehaviorTreeTask[] Children => this.children.ToArray();
 
         public abstract void Run(float delta);
 
         public virtual void Reset()
         {
-            this.children.ForEach(c => c.Reset());
+            //this.children.ForEach(c => c.Reset());
             this.Status = TaskStatus.Fresh;
         }
 
@@ -45,104 +45,170 @@ namespace Safelight.Actors
         }
     }
 
-    public class ParallelSequence : BehaviorTreeTask
+    // public class ParallelSequence : BehaviorTreeTask
+    // {
+    //     public override void Run(float delta)
+    //     {
+    //         var children = this.Children;
+    //         if (!children.Any())
+    //         {
+    //             this.Status = TaskStatus.Succeeded;
+    //         }
+    //
+    //         this.Status = TaskStatus.Running;
+    //         foreach (var child in children)
+    //         {
+    //             if (child.Status == TaskStatus.Running || child.Status == TaskStatus.Fresh)
+    //             {
+    //                 child.Run(delta);
+    //             }
+    //             else
+    //             {
+    //                 child.Reset();
+    //             }
+    //         }
+    //     }
+    //
+    //     public ParallelSequence(params BehaviorTreeTask[] children) : this(null, children) { }
+    //
+    //     public ParallelSequence(Func<bool> guard = null, params BehaviorTreeTask[] children) : base(guard)
+    //     {
+    //         this.AddChildren(children);
+    //     }
+    // }
+
+    public class Selector : Branchy
     {
         public override void Run(float delta)
         {
-            var children = this.Children;
-            if (!children.Any())
+            this.PopNextIfNeeded();
+            this.Status = TaskStatus.Succeeded;
+            if (this.Current != null)
             {
-                this.Status = TaskStatus.Succeeded;
-            }
+                this.Current.Run(delta);
 
-            this.Status = TaskStatus.Running;
-            foreach (var child in children)
-            {
-                if (child.Status == TaskStatus.Running || child.Status == TaskStatus.Fresh)
-                {
-                    child.Run(delta);
-                }
-                else
-                {
-                    child.Reset();
-                }
-            }
-        }
-
-        public ParallelSequence(params BehaviorTreeTask[] children) : this(null, children) { }
-
-        public ParallelSequence(Func<bool> guard = null, params BehaviorTreeTask[] children) : base(guard)
-        {
-            this.AddChildren(children);
-        }
-    }
-
-    public class Selector : BehaviorTreeTask
-    {
-        public override void Run(float delta)
-        {
-            if (!this.Children.Any()) return;
-            this.Status = TaskStatus.Running;
-            foreach (var child in this.Children)
-            {
-                if (child.Status == TaskStatus.Running || child.Status == TaskStatus.Fresh) child.Run(delta);
-
-                if (child.Status == TaskStatus.Running) return;
-
-                if (child.Status == TaskStatus.Failed)
+                if (this.Current.Status == TaskStatus.Failed)
                 {
                     this.Status = TaskStatus.Failed;
-                    continue;
+                    this.Current.Reset();
                 }
 
-                if (child.Status == TaskStatus.Succeeded)
+                if (this.Current.Status == TaskStatus.Succeeded)
                 {
-                    this.Reset();
-                    this.Status = TaskStatus.Succeeded;
-                    return;
+                    this.Current.Reset();
+                    this.Restart();
                 }
             }
         }
 
         public Selector(params BehaviorTreeTask[] children) : this(null, children) { }
 
-        public Selector(Func<bool> guard = null, params BehaviorTreeTask[] children) : base(guard)
-        {
-            this.AddChildren(children);
-        }
+        public Selector(Func<bool> guard = null, params BehaviorTreeTask[] children) : base(guard, children) { }
     }
 
-    public class Sequence : BehaviorTreeTask
+    public class Sequence : Branchy
     {
         public override void Run(float delta)
         {
-            var children = this.Children;
-            if (!children.Any()) return;
-            this.Status = TaskStatus.Running;
-            foreach (var child in children)
+            this.PopNextIfNeeded();
+            this.Status = TaskStatus.Succeeded;
+            if (this.Current != null)
             {
-                if (child.Status == TaskStatus.Running || child.Status == TaskStatus.Fresh) child.Run(delta);
+                this.Current.Run(delta);
 
-                if (child.Status == TaskStatus.Running) return;
-
-                if (child.Status == TaskStatus.Succeeded)
+                if (this.Current.Status == TaskStatus.Succeeded)
                 {
-                    child.Reset();
+                    this.Current.Reset();
                 }
-                else if (child.Status == TaskStatus.Failed)
+
+                if (this.Current.Status == TaskStatus.Failed)
                 {
-                    this.Reset();
+                    this.Current.Reset();
                     this.Status = TaskStatus.Failed;
-                    return;
                 }
             }
         }
 
         public Sequence(params BehaviorTreeTask[] children) : this(null, children) { }
 
-        public Sequence(Func<bool> guard = null, params BehaviorTreeTask[] children) : base(guard)
+        public Sequence(Func<bool> guard = null, params BehaviorTreeTask[] children) : base(guard, children) { }
+    }
+
+    public class ParallelSequence : Branchy
+    {
+        public override void Run(float delta)
+        {
+            this.PopNextIfNeeded();
+            var seen = 1;
+            this.Status = TaskStatus.Succeeded;
+            while (this.Current != null && seen <= this.Children.Length)
+            {
+                this.Current.Run(delta);
+
+                if (this.Current.Status == TaskStatus.Succeeded)
+                {
+                    this.Current.Reset();
+                }
+
+                if (this.Current.Status == TaskStatus.Failed)
+                {
+                    this.Current.Reset();
+                    this.Status = TaskStatus.Failed;
+                }
+
+                this.PopNextIfNeeded();
+                seen++;
+            }
+        }
+
+        public ParallelSequence(params BehaviorTreeTask[] children) : this(null, children) { }
+
+        public ParallelSequence(Func<bool> guard = null, params BehaviorTreeTask[] children) : base(guard, children) { }
+    }
+
+    public abstract class Branchy : BehaviorTreeTask
+    {
+        private int? currentIndex = null;
+
+        protected BehaviorTreeTask Current => this.currentIndex.HasValue ? this.Children[this.currentIndex.Value] : null;
+
+        protected Branchy(params BehaviorTreeTask[] children) : this(null, children) { }
+
+        protected Branchy(Func<bool> guard = null, params BehaviorTreeTask[] children) : base(guard)
         {
             this.AddChildren(children);
+        }
+
+        public void Restart()
+        {
+            this.currentIndex = null;
+        }
+
+        protected void PopNextIfNeeded()
+        {
+            if (this.Current != null && (this.Current.Status == TaskStatus.Running))
+            {
+                return;
+            }
+
+            var saw = 0;
+            while (saw < this.Children.Length)
+            {
+                if (this.currentIndex.HasValue)
+                {
+                    this.currentIndex++;
+                }
+                else
+                {
+                    this.currentIndex = 0;
+                }
+
+                if (this.currentIndex == this.Children.Length) this.currentIndex = 0;
+                if (this.Current.Guard == null || this.Current.Guard()) return;
+                saw++;
+            }
+
+            this.currentIndex = null;
         }
     }
 }

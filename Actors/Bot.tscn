@@ -15,6 +15,7 @@ height = 3.8258
 extents = Vector2( 100, 100 )
 
 [node name="Bot" type="Area2D"]
+z_index = 1
 collision_layer = 1026
 collision_mask = 8
 script = ExtResource( 3 )
@@ -37,6 +38,7 @@ light_mask = 2
 shape = SubResource( 2 )
 
 [node name="DetectionArea" type="Area2D" parent="."]
+visible = false
 collision_layer = 0
 collision_mask = 4
 

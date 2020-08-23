@@ -25,7 +25,7 @@ namespace Safelight.Actors
             this.Status = TaskStatus.Succeeded;
             //GD.Print("MoveAlongPathTask");
             var bot = this.Node;
-            var distance = bot.WalkSpeed * WorldState.I.TickLengthMs;
+            var distance = bot.WalkSpeed * delta;
 
             var start = bot.Position;
             //GD.Print(string.Join(",", bot.Path));

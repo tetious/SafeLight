@@ -19,7 +19,7 @@ namespace Safelight.Actors
             var start = me.Position;
             var toNext = start.DistanceTo(me.PathSegmentGoal);
             var toMove = me.WalkSpeed * delta / toNext;
-            if (toNext < 1)
+            if (toNext <  me.WalkSpeed * delta)
             {
                 me.Position = me.PathSegmentGoal;
             }

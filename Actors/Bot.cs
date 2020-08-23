@@ -10,12 +10,12 @@ public class Bot : Area2D, IPathed
 {
     public WorldManager World { get; private set; }
 
-    private readonly Selector root;
+    private readonly BehaviorTreeTask root;
 
     public WorldResource ResourceAtFoot { get; set; } = null;
 
     [Export]
-    public int WalkSpeed { get; set; } = 100;
+    public int WalkSpeed { get; set; } = 200;
 
     [Export]
     public BotType Type { get; set; }
@@ -24,17 +24,19 @@ public class Bot : Area2D, IPathed
 
     public Vector2 PathSegmentGoal { get; set; } = Vector2.Zero;
 
-    public HashSet<Mob> VisibleMobs { get;} = new HashSet<Mob>();
+    public HashSet<Mob> VisibleMobs { get; } = new HashSet<Mob>();
 
     [Export]
     public int SightDistance { get; set; } = 400;
+
+    private readonly PackedScene laserShot = GD.Load<PackedScene>("res://Actors/LaserShot.tscn");
 
     public Rect2 SightRect => new Rect2(this.GlobalPosition - new Vector2(this.SightDistance, this.SightDistance) / 2,
         new Vector2(this.SightDistance, this.SightDistance));
 
     public Bot()
     {
-        var selfDefense = new Selector();
+        var selfDefense = new Sequence(() => this.VisibleMobs.Any(), new ShootNearestBaddie(this), new DelayTask(() => 500));
 
         var gatherer = new Selector(() => this.Type == BotType.Gatherer,
             new Sequence(new StandingOnResourceTask(this), new GatherResourceTask(this)),
@@ -42,7 +44,7 @@ public class Bot : Area2D, IPathed
         );
 
         var move = new Selector(new MoveTowardPathSegmentGoalTask<Bot>(this), new NextPathSegmentTask<Bot>(this));
-        this.root = new Selector(move, gatherer);
+        this.root = new ParallelSequence(move, selfDefense, gatherer);
     }
 
     public override void _Ready()
@@ -58,7 +60,7 @@ public class Bot : Area2D, IPathed
 
         if (this.Path.Any())
         {
-            this.DrawMultiline(new []{ this.Position }.Concat(this.Path).ToArray(), Colors.Aqua);
+            this.DrawMultiline(new[] { this.Position }.Concat(this.Path).ToArray(), Colors.Aqua);
             this.DrawCircle(this.Path.Last(), 2, Colors.Aqua);
         }
 
@@ -71,6 +73,15 @@ public class Bot : Area2D, IPathed
     {
         this.Update();
         this.root.Run(delta);
+    }
+
+    public void FireAt(Vector2 spot)
+    {
+        var laserShot = this.laserShot.Instance() as LaserShot;
+        laserShot.Position = this.Position;
+        laserShot.Velocity = this.Position.DirectionTo(spot) * 400;
+        laserShot.LookAt(spot);
+        this.GetParent().AddChild(laserShot);
     }
 
     public void DetectedBodyEntered(Node node)

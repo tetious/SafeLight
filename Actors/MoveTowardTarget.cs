@@ -18,7 +18,7 @@ namespace Safelight.Actors
 
         public override void Run(float delta)
         {
-            this.Status = TaskStatus.Succeeded;
+            this.Status = TaskStatus.Running;
 
             if (this.Node.Target == Vector2.Zero) GD.PrintErr("Target is 0,0 for ", this.Node.GetInstanceId());
 
@@ -38,6 +38,7 @@ namespace Safelight.Actors
             if (me.Position == me.Target)
             {
                 GD.Print($"[{me.GetInstanceId()}] Hit target {me.Target}!");
+                this.Status = TaskStatus.Succeeded;
                 this.Reset();
                 return;
             }
