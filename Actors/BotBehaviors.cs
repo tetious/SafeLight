@@ -1,32 +1,38 @@
 using System;
 using System.Linq;
 using Godot;
+using Safelight.Props;
 
 namespace Safelight.Actors
 {
-    public class DelayTask : BehaviorTreeTask
+    public class BuildBuildable : BehaviorTreeTask<Bot>
     {
-        private readonly Func<int> delayMs;
-
-        public DelayTask(Func<int> delayMs, Func<BehaviorTreeTask, bool> guard = null) : base(guard)
-        {
-            this.delayMs = delayMs;
-        }
-
-        private float delay = 0;
+        public BuildBuildable(Bot node, Func<BehaviorTreeTask, bool> guard = null) : base(node, guard) { }
 
         public override void Run(float delta)
         {
-            this.delay += delta * 1000;
+            var me = this.Node;
 
-            this.Status = TaskStatus.Running;
-            if (this.delay >= this.delayMs()) this.Status = TaskStatus.Succeeded;
-        }
-
-        public override void Reset()
-        {
-            base.Reset();
-            this.delay = 0;
+            var overlappingAreas = this.Node.GetOverlappingAreas().Cast<Area2D>();
+            var toBuild = overlappingAreas.OfType<Buildable>().FirstOrDefault(a => a.GetParent().Name == "ToBuild");
+            if (toBuild != null)
+            {
+                GD.Print("BuildBuildable: Standing on a buildable!");
+                var cost = WorldState.I.Cost[toBuild.Name];
+                if (toBuild.Hp == 0) WorldState.I.SubtractCrystals(cost);
+                toBuild.Hp += toBuild.MaxHp / 500;
+                this.Status = TaskStatus.Running;
+                if (toBuild.Hp == toBuild.MaxHp)
+                {
+                    this.Status = TaskStatus.Succeeded;
+                    me.World.MarkBuildComplete(toBuild);
+                }
+            }
+            else
+            {
+                GD.Print("BuildBuildable: NOT Standing on a buildable!");
+                this.Status = TaskStatus.Failed;
+            }
         }
     }
 

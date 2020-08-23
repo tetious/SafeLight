@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 public class WorldState : Node
 {
@@ -32,6 +33,12 @@ public class WorldState : Node
 
     public float TickLengthMs { get; private set; } = 0.1f;
 
+    public Dictionary<string, int> Cost { get; } = new Dictionary<string, int>
+    {
+        { "SolarPanel", 1000 },
+        { "Lamp", 5000 },
+    };
+
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
@@ -55,9 +62,16 @@ public class WorldState : Node
 
         return this.Gatherers;
     }
+
     public void AddCrystals(float num)
     {
         this.crystalCount += num;
+        this.EmitSignal("StateChanged");
+    }
+
+    public void SubtractCrystals(float num)
+    {
+        this.crystalCount -= num;
         this.EmitSignal("StateChanged");
     }
 

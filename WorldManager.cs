@@ -104,16 +104,20 @@ public class WorldManager : Node2D
         Update();
     }
 
-    private void UpdateBuildProgress(Node2D node)
+    private void UpdateBuildProgress(Area2D node)
     {
         node.Scale = Vector2.One;
         node.Modulate = this.toBuildColor;
     }
 
-    private void MarkBuildComplete(Node2D node)
+    public void MarkBuildComplete(Area2D node)
     {
         node.Scale = Vector2.One;
         node.Modulate = Colors.White;
+        this.toBuild.RemoveChild(node);
+        this.Map.AddStaticBodyCollider(node);
+        this.propsContainer.AddChild(node);
+        GD.Print("BUILT ", node.Name);
     }
 
     private Area2D buildTemp;
@@ -121,7 +125,6 @@ public class WorldManager : Node2D
     private BaseButton pressedButton;
 
     private bool buildOk = false;
-
 
 
     public void DrawBuildTemp()

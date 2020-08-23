@@ -18,12 +18,7 @@ public class Map : Node2D
 
         foreach (Area2D prop in this.GetNode("Props").GetChildren())
         {
-            var shape = prop.GetNode<CollisionShape2D>("Shape");
-
-            var body = new StaticBody2D();
-            body.AddChild(shape.Duplicate());
-            body.CollisionLayer = 1024;
-            prop.AddChild(body);
+            this.AddStaticBodyCollider(prop);
         }
 
         var usedTiles = this.tileMap.GetUsedCells().Cast<Vector2>().ToArray();
@@ -75,6 +70,16 @@ public class Map : Node2D
                 }
             }
         }
+    }
+
+    public void AddStaticBodyCollider(Area2D prop)
+    {
+        var shape = prop.GetNode<CollisionShape2D>("Shape");
+
+        var body = new StaticBody2D();
+        body.AddChild(shape.Duplicate());
+        body.CollisionLayer = 1024;
+        prop.AddChild(body);
     }
 
     public Vector2[] GetPath(Vector2 start, Vector2 end)

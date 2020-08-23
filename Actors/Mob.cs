@@ -10,6 +10,10 @@ namespace Safelight.Actors
     {
         public WorldManager World { get; private set; }
 
+        public int MaxHp { get; set; } = 100;
+
+        public int Hp { get; set; } = 100;
+
         [Export]
         public int WalkSpeed { get; set; } = 100;
 
@@ -79,6 +83,16 @@ namespace Safelight.Actors
             this.Update();
         }
 
-        public void OnHit(int damage) => GD.Print("HIT!!! ", damage);
+        public void OnHit(int damage)
+        {
+            this.Hp -= damage;
+            if (this.Hp <= 0) this.Die();
+        }
+
+        private void Die()
+        {
+            GD.Print("UGH.");
+            this.QueueFree();
+        }
     }
 }

@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=2]
+[gd_scene load_steps=19 format=2]
 
 [ext_resource path="res://WorldManager.cs" type="Script" id=1]
 [ext_resource path="res://1bit.tres" type="TileSet" id=2]
@@ -14,6 +14,7 @@
 [ext_resource path="res://GUI/solarpanel-icon.png" type="Texture" id=12]
 [ext_resource path="res://GUI/BuildButton.gd" type="Script" id=13]
 [ext_resource path="res://GUI/BuildButtonGroup.tres" type="ButtonGroup" id=14]
+[ext_resource path="res://Actors/Mob.tscn" type="PackedScene" id=15]
 
 [sub_resource type="AtlasTexture" id=1]
 atlas = ExtResource( 9 )
@@ -58,6 +59,12 @@ position = Vector2( 296, 312 )
 
 [node name="Crystal2" parent="Map/Resources" instance=ExtResource( 8 )]
 position = Vector2( 296, 328 )
+
+[node name="Crystal3" parent="Map/Resources" instance=ExtResource( 8 )]
+position = Vector2( 296, 344 )
+
+[node name="Crystal4" parent="Map/Resources" instance=ExtResource( 8 )]
+position = Vector2( 280, 360 )
 
 [node name="Props" type="Node" parent="Map"]
 
@@ -139,5 +146,18 @@ propName = "SolarPanel"
 [node name="Bots" type="Node2D" parent="."]
 
 [node name="Bot" parent="Bots" instance=ExtResource( 3 )]
-position = Vector2( 248, 344 )
+position = Vector2( 200, 216 )
 Type = 2
+
+[node name="Bot2" parent="Bots" instance=ExtResource( 3 )]
+position = Vector2( 200, 232 )
+Type = 1
+
+[node name="Bot3" parent="Bots" instance=ExtResource( 3 )]
+position = Vector2( 200, 248 )
+Type = 1
+
+[node name="Mobs" type="Node" parent="."]
+
+[node name="Mob" parent="Mobs" instance=ExtResource( 15 )]
+position = Vector2( 304, 568 )

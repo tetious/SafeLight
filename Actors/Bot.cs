@@ -49,7 +49,9 @@ public class Bot : Area2D, IPathed
         );
 
         var builder = new Selector("Builder", _ => this.Type == BotType.Builder,
-            new FindNearest<Area2D>(this, this.World.GetNode("Map/ToBuild"))
+            new Sequence("BuildPop", new BuildBuildable(this)),
+            new FindNearest<Area2D>(this, this.World.GetNode("Map/ToBuild")),
+            new DelayTask(() => 1000)
         );
 
         var selfDefense = new Sequence("SelfDefense", _ => this.VisibleMobs.Any(), new ShootNearestBaddie(this), new DelayTask(() => 500));
