@@ -11,7 +11,7 @@ namespace Safelight.Actors
 
         Vector2 PathSegmentGoal { get; set; }
 
-        List<Vector2> Path { get; }
+        List<Vector2> Path { get; set; }
     }
 
     public class NextPathSegmentTask<T> : BehaviorTreeTask<T>
@@ -35,7 +35,7 @@ namespace Safelight.Actors
                 var toNext = start.DistanceTo(tip);
 
                 bot.PathSegmentGoal = start.LinearInterpolate(tip, distance / toNext);
-                //GD.Print(bot.GetInstanceId(), "-> Setting PathGoal:", bot.PathSegmentGoal);
+                GD.Print(bot.GetInstanceId(), "-> Setting PathGoal:", bot.PathSegmentGoal);
 
                 if (distance < toNext)
                     break;

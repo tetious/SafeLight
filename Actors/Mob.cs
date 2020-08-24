@@ -24,7 +24,7 @@ namespace Safelight.Actors
         public Vector2 PathSegmentGoal { get; set; }
 
         [Export]
-        public int SightDistance { get; set; } = 400;
+        public int SightDistance { get; set; } = 300;
 
         [Signal]
         public delegate void Hit(int damage);
@@ -36,11 +36,15 @@ namespace Safelight.Actors
 
         private readonly BehaviorTreeTask root;
 
+        private bool IsPathing => this.Path.Any() || this.PathSegmentGoal != Vector2.NegOne;
+
         public Mob()
         {
             var path = new Selector("Path", new MoveTowardPathSegmentGoalTask<Mob>(this), new NextPathSegmentTask<Mob>(this));
 
-            var move = new Selector("Move", new MoveTowardTarget<Mob>(this), path);
+            var move = new Selector("Move", _ => this.Target != Vector2.Zero,
+                new MoveTowardTarget<Mob>(this, _ => !this.Path.Any()),
+                new BuildPathToTarget(this, _ => !this.Path.Any()), path);
             this.root = new Sequence("Root", move, new FindLight(this));
         }
 
@@ -59,22 +63,29 @@ namespace Safelight.Actors
         public override void _Draw()
         {
             if (this.World.DEBUG == false) return;
-
             this.DrawSetTransform(new Vector2() - this.GlobalPosition, 0, Vector2.One);
-            if (this.Path.Any()) this.DrawCircle(this.Path.Last(), 2, Colors.Blue);
-            this.DrawRect(this.SightRect, Colors.YellowGreen, false);
 
-            foreach (var target in this.LightTargets)
+            if (this.Path.Any())
             {
-                if (target.obstacle.Count == 0)
-                {
-                    this.DrawLine(target.source, target.dest, Colors.Green);
-                }
-                else
-                {
-                    this.DrawLine(target.source, (Vector2)target.obstacle["position"], Colors.Red);
-                }
+                this.DrawMultiline(new[] { this.Position }.Concat(this.Path).ToArray(), Colors.Aqua);
+                this.DrawCircle(this.Path.Last(), 2, Colors.Aqua);
             }
+
+            // this.DrawSetTransform(new Vector2() - this.GlobalPosition, 0, Vector2.One);
+            // if (this.Path.Any()) this.DrawCircle(this.Path.Last(), 2, Colors.Blue);
+            // this.DrawRect(this.SightRect, Colors.YellowGreen, false);
+            //
+            // foreach (var target in this.LightTargets)
+            // {
+            //     if (target.obstacle.Count == 0)
+            //     {
+            //         this.DrawLine(target.source, target.dest, Colors.Green);
+            //     }
+            //     else
+            //     {
+            //         this.DrawLine(target.source, (Vector2)target.obstacle["position"], Colors.Red);
+            //     }
+            // }
         }
 
         public override void _PhysicsProcess(float delta)

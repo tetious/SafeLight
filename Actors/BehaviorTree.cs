@@ -93,8 +93,9 @@ namespace Safelight.Actors
             while (this.Current != null && seen <= this.Children.Length)
             {
                 this.Current.Run(delta);
-                //GD.Print($"Sequence:{this.Tag}.Run: {this.Current.GetType().Name}:{this.Current.Tag}.{this.Current.Status}.");
+                // GD.Print($"Sequence:{this.Tag}.Run: {this.Current.GetType().Name}:{this.Current.Tag}.{this.Current.Status}.");
 
+                this.Status = TaskStatus.Running;
                 if (this.Current.Status == TaskStatus.Succeeded)
                 {
                     this.Current.Reset();
@@ -146,7 +147,7 @@ namespace Safelight.Actors
 
         protected void PopNextIfNeeded()
         {
-            if (this.Current != null && (this.Current.Status == TaskStatus.Running))
+            if (this.Current != null && this.Current.Status == TaskStatus.Running)
             {
                 return;
             }

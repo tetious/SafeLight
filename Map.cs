@@ -105,6 +105,12 @@ public class Map : Node2D
         return (this.tileMap.TileSet.TileGetTexture(index), this.tileMap.TileSet.TileGetTextureOffset(index));
     }
 
+    public void SetTile(Vector2 position, int index)
+    {
+        var map = this.tileMap.WorldToMap(position);
+        this.tileMap.SetCellv(map, index);
+    }
+
     private int IdForPoint(Vector2 point)
     {
         var x = point.x - this.usedRect.Position.x;

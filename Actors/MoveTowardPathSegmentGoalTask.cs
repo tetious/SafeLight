@@ -30,7 +30,8 @@ namespace Safelight.Actors
 
             if (me.Position == me.PathSegmentGoal)
             {
-                //GD.Print("Hit dest! ", me.PathSegmentGoal);
+                if (me is Mob)
+                    GD.Print("Hit dest! ", me.PathSegmentGoal);
                 me.PathSegmentGoal = Vector2.Zero;
                 this.Status = TaskStatus.Succeeded;
             }

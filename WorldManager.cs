@@ -5,6 +5,7 @@ using System.Linq;
 using Godot.Collections;
 using Safelight.Actors;
 using Safelight.Props;
+using Array = Godot.Collections.Array;
 
 
 public class WorldManager : Node2D
@@ -86,8 +87,6 @@ public class WorldManager : Node2D
                         this.toBuild.AddChild(this.buildTemp);
                         this.buildTemp = null;
 
-                        GD.Print("BUINDING");
-
                         //this.buildBarGroup.GetPressedButton().Pressed = false;
                         //this.BuildMode = false;
                     }
@@ -115,9 +114,44 @@ public class WorldManager : Node2D
         node.Scale = Vector2.One;
         node.Modulate = Colors.White;
         this.toBuild.RemoveChild(node);
-        this.Map.AddStaticBodyCollider(node);
-        this.propsContainer.AddChild(node);
-        GD.Print("BUILT ", node.Name);
+        if (node.Name != "Wall")
+        {
+            this.Map.AddStaticBodyCollider(node);
+            this.propsContainer.AddChild(node);
+            GD.Print("BUILT ", node.Name);
+        }
+        else
+        {
+            this.Map.SetTile(node.Position, ((Wall)node).tileIndex);
+            node.QueueFree();
+        }
+    }
+
+    public bool HasLineOfSightToLight(Vector2 position)
+    {
+        var lightTargets = new List<(Vector2 src, Vector2 dest, Dictionary obstacle)>();
+
+        void CheckAndAdd(Vector2 source, Vector2 dest)
+        {
+            var obstacle = this.GetWorld2d().DirectSpaceState.IntersectRay(source, dest, null, 0b1);
+            lightTargets.Add((source, dest, obstacle));
+        }
+
+        foreach (var visibleLight in this.Lights.Where(l => l.Enabled))
+        {
+            var offset = new Vector2(0, 8).Rotated(this.GetAngleTo(visibleLight.GlobalPosition));
+            CheckAndAdd(position, visibleLight.GlobalPosition);
+            CheckAndAdd(position + offset, visibleLight.GlobalPosition);
+            CheckAndAdd(position - offset, visibleLight.GlobalPosition);
+        }
+
+        return lightTargets.Any(c => c.obstacle.Count == 0);
+    }
+
+    public bool HasLineOfSightToPoint(Node2D me, Vector2 src, Vector2 dest)
+    {
+        var obstacle = this.GetWorld2d().DirectSpaceState.IntersectRay(src, dest, new Array { me }, 0b1);
+        return obstacle.Count == 0;
     }
 
     private Area2D buildTemp;
@@ -125,7 +159,6 @@ public class WorldManager : Node2D
     private BaseButton pressedButton;
 
     private bool buildOk = false;
-
 
     public void DrawBuildTemp()
     {
@@ -167,7 +200,6 @@ public class WorldManager : Node2D
         var extents = rect.Extents;
 
         this.buildTemp.Position = this.Map.GetBuildPosition(this.GetGlobalMousePosition()) + extents;
-
 
         var bodies = this.buildTemp.GetOverlappingBodies();
         var areas = this.buildTemp.GetOverlappingAreas();

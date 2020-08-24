@@ -31,7 +31,6 @@ namespace Safelight.Actors
             if (target != Vector2.Zero && me.Target != target)
             {
                 //GD.Print("NEW TARGET");
-                me.Path = me.World.Map.GetPath(me.GlobalPosition, target).ToList();
                 me.Target = target;
                 this.Status = TaskStatus.Succeeded;
             }
@@ -49,5 +48,22 @@ namespace Safelight.Actors
         }
 
         public FindLight(Mob node, Func<BehaviorTreeTask, bool> guard = null) : base(node, guard) { }
+    }
+
+    public class BuildPathToTarget : BehaviorTreeTask<Mob>
+    {
+        public BuildPathToTarget(Mob node, Func<BehaviorTreeTask, bool> guard = null) : base(node, guard) { }
+
+        public override void Run(float delta)
+        {
+            var me = this.Node;
+
+            if (me.Target != Vector2.Zero)
+            {
+                me.Path = me.World.Map.GetPath(me.Position, me.Target).ToList();
+            }
+
+            this.Status = TaskStatus.Succeeded;
+        }
     }
 }

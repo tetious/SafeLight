@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using Godot;
 using System.Linq;
+using Safelight;
 using Safelight.Actors;
 
 public enum BotType { None, Gatherer, Builder }
 
-public class Bot : Area2D, IPathed
+public class Bot : Area2D, IPathed, IShoot
 {
     public WorldManager World { get; private set; }
 
@@ -54,7 +55,7 @@ public class Bot : Area2D, IPathed
             new DelayTask(() => 1000)
         );
 
-        var selfDefense = new Sequence("SelfDefense", _ => this.VisibleMobs.Any(), new ShootNearestBaddie(this), new DelayTask(() => 500));
+        var selfDefense = new Sequence("SelfDefense", _ => this.VisibleMobs.Any(), new ShootNearestBaddie<Bot>(this), new DelayTask(() => 500));
         var move = new Selector("Move", s => s.AnyCanRun, new MoveTowardPathSegmentGoalTask<Bot>(this), new NextPathSegmentTask<Bot>(this));
         this.root = new Selector("Root", new Sequence("MoveSelfDefence", move, selfDefense), gatherer, builder);
     }

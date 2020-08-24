@@ -1,4 +1,5 @@
 using System;
+using Godot;
 
 namespace Safelight.Actors
 {
@@ -11,20 +12,18 @@ namespace Safelight.Actors
             this.delayMs = delayMs;
         }
 
-        private float delay = 0;
+        private int delay = 0;
 
         public override void Run(float delta)
         {
-            this.delay += delta * 1000;
+            this.delay += (int)(delta * 1000);
 
             this.Status = TaskStatus.Running;
-            if (this.delay >= this.delayMs()) this.Status = TaskStatus.Succeeded;
-        }
-
-        public override void Reset()
-        {
-            base.Reset();
-            this.delay = 0;
+            if (this.delay >= this.delayMs())
+            {
+                this.delay = 0;
+                this.Status = TaskStatus.Succeeded;
+            }
         }
     }
 }

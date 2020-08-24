@@ -37,6 +37,7 @@ public class WorldState : Node
     {
         { "SolarPanel", 1000 },
         { "Lamp", 5000 },
+        { "Wall", 100 }
     };
 
     // Called when the node enters the scene tree for the first time.

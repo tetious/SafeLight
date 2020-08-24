@@ -13,14 +13,14 @@ namespace Safelight.Actors
         {
             var me = this.Node;
 
-            var overlappingAreas = this.Node.GetOverlappingAreas().Cast<Area2D>();
+            var overlappingAreas = this.Node.GetOverlappingAreas();
             var toBuild = overlappingAreas.OfType<Buildable>().FirstOrDefault(a => a.GetParent().Name == "ToBuild");
             if (toBuild != null)
             {
-                GD.Print("BuildBuildable: Standing on a buildable!");
+                GD.Print($"BuildBuildable: Standing on a {toBuild.Name} buildable!");
                 var cost = WorldState.I.Cost[toBuild.Name];
                 if (toBuild.Hp == 0) WorldState.I.SubtractCrystals(cost);
-                toBuild.Hp += toBuild.MaxHp / 500;
+                toBuild.Hp += toBuild.MaxHp / 100;
                 this.Status = TaskStatus.Running;
                 if (toBuild.Hp == toBuild.MaxHp)
                 {
@@ -36,9 +36,10 @@ namespace Safelight.Actors
         }
     }
 
-    public class ShootNearestBaddie : BehaviorTreeTask<Bot>
+    public class ShootNearestBaddie<T> : BehaviorTreeTask<T>
+        where T : Node2D, IShoot
     {
-        public ShootNearestBaddie(Bot node, Func<BehaviorTreeTask, bool> guard = null) : base(node, guard) { }
+        public ShootNearestBaddie(T node, Func<BehaviorTreeTask, bool> guard = null) : base(node, guard) { }
 
         public override void Run(float delta)
         {
@@ -46,19 +47,28 @@ namespace Safelight.Actors
 
             if (me.VisibleMobs.Any() == false) return;
 
-            var nearest = me.VisibleMobs.First();
-            foreach (var mob in me.VisibleMobs.Skip(1))
+            Mob nearest = null;
+            foreach (var mob in me.VisibleMobs)
             {
-                if (mob.GlobalPosition.DistanceTo(me.GlobalPosition) < nearest.GlobalPosition.DistanceTo(me.GlobalPosition))
+                if (me.World.HasLineOfSightToPoint(me, me.GlobalPosition, mob.GlobalPosition) &&
+                    (nearest == null ||
+                        mob.GlobalPosition.DistanceTo(me.GlobalPosition) < nearest.GlobalPosition.DistanceTo(me.GlobalPosition)))
                 {
                     nearest = mob;
                 }
             }
 
-            GD.Print($"[{delta}]{me.GetInstanceId()}: shooting {nearest.GetInstanceId()}");
-            me.FireAt(nearest.GlobalPosition);
-
-            this.Status = TaskStatus.Succeeded;
+            if (nearest != null)
+            {
+                //GD.Print($"[{delta}]{me.GetInstanceId()}: shooting {nearest.GetInstanceId()}");
+                me.FireAt(nearest.GlobalPosition);
+                this.Status = TaskStatus.Succeeded;
+            }
+            else
+            {
+                //GD.Print($"[{delta}]{me.Name}: no LoS to any mobs.");
+                this.Status = TaskStatus.Failed;
+            }
         }
     }
 

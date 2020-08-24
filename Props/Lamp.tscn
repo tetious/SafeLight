@@ -1,15 +1,18 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://assets/img/lamp.png" type="Texture" id=1]
 [ext_resource path="res://Props/SafeLight.tscn" type="PackedScene" id=2]
-[ext_resource path="res://Props/Lamp.gd" type="Script" id=3]
+[ext_resource path="res://Props/Lamp.cs" type="Script" id=3]
 
 [sub_resource type="RectangleShape2D" id=1]
 extents = Vector2( 24, 24 )
 
+[sub_resource type="RectangleShape2D" id=2]
+extents = Vector2( 120, 120 )
+
 [node name="Lamp" type="Area2D"]
 collision_layer = 132096
-collision_mask = 132097
+collision_mask = 131072
 script = ExtResource( 3 )
 
 [node name="lamp" type="Sprite" parent="."]
@@ -19,3 +22,11 @@ texture = ExtResource( 1 )
 shape = SubResource( 1 )
 
 [node name="SafeLight" parent="." instance=ExtResource( 2 )]
+
+[node name="DetectionArea" type="Area2D" parent="."]
+visible = false
+collision_layer = 0
+collision_mask = 4
+
+[node name="Shape" type="CollisionShape2D" parent="DetectionArea"]
+shape = SubResource( 2 )
